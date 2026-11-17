@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Pārdošanas atskaišu veidotājs</title>
-  <!-- Google Fonts: Roboto & Material Symbols -->
+  <!-- Google Fonts: Roboto, Times New Roman & Material Symbols -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet" />
@@ -53,7 +53,7 @@
 
     .app-container {
       width: 100%;
-      max-width: 680px;
+      max-width: 720px;
       background-color: var(--md-sys-color-surface);
       border-radius: 28px;
       padding: 32px;
@@ -62,7 +62,7 @@
     }
 
     .header {
-      margin-bottom: 24px;
+      margin-bottom: 20px;
     }
 
     .header h1 {
@@ -80,6 +80,48 @@
       font-size: 14px;
       color: var(--md-sys-color-on-surface-variant);
       line-height: 1.4;
+    }
+
+    /* Material 3 Segmented Tabs */
+    .tabs-bar {
+      display: flex;
+      background-color: var(--md-sys-color-surface-container);
+      padding: 4px;
+      border-radius: 100px;
+      margin-bottom: 24px;
+      border: 1px solid #E7E0EC;
+    }
+
+    .tab-btn {
+      flex: 1;
+      border: none;
+      background: transparent;
+      padding: 10px 16px;
+      border-radius: 100px;
+      font-family: inherit;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--md-sys-color-on-surface-variant);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: background-color 0.2s, color 0.2s, box-shadow 0.2s;
+    }
+
+    .tab-btn.active {
+      background-color: var(--md-sys-color-primary);
+      color: var(--md-sys-color-on-primary);
+      box-shadow: 0 2px 6px rgba(103, 80, 164, 0.25);
+    }
+
+    .tab-panel {
+      display: none;
+    }
+
+    .tab-panel.active {
+      display: block;
     }
 
     .card {
@@ -276,6 +318,119 @@
     .status-box ul {
       margin: 8px 0 8px 20px;
     }
+
+    .selected-files-list {
+      list-style: none;
+      margin-top: 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .selected-files-list li {
+      background: #FFFFFF;
+      border: 1px solid var(--md-sys-color-outline-variant);
+      border-radius: 8px;
+      padding: 6px 12px;
+      font-size: 13px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    /* =====================================================================
+       DRUKAS STILI (@media print) — Katrs sheet uz savas A4 Portrait lapas
+       ===================================================================== */
+    #printMount {
+      display: none;
+    }
+
+    @media print {
+      @page {
+        size: A4 portrait;
+        margin: 12mm 10mm;
+      }
+
+      body {
+        background: #FFFFFF !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        display: block !important;
+      }
+
+      .app-container {
+        display: none !important;
+      }
+
+      #printMount {
+        display: block !important;
+        width: 100%;
+      }
+
+      .print-sheet-page {
+        page-break-after: always;
+        break-after: page;
+        width: 100%;
+        padding-top: 8px;
+      }
+
+      .print-sheet-page:last-child {
+        page-break-after: auto;
+        break-after: auto;
+      }
+
+      .print-file-tag {
+        font-family: 'Roboto', sans-serif;
+        font-size: 9pt;
+        color: #666666;
+        text-align: right;
+        margin-bottom: 4px;
+      }
+
+      .report-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-family: 'Times New Roman', Times, serif;
+        font-size: 13.5pt;
+        color: #000000;
+      }
+
+      .report-table td {
+        padding: 3px 6px;
+        vertical-align: middle;
+        white-space: nowrap;
+      }
+
+      .report-header-row td {
+        border-bottom: 3px double #000000;
+        padding-bottom: 6px;
+      }
+
+      .report-title {
+        font-size: 17pt;
+        font-weight: bold;
+        text-align: left;
+      }
+
+      .report-code {
+        font-size: 14pt;
+        text-align: right;
+      }
+
+      .num-cell {
+        text-align: right;
+      }
+
+      .label-right {
+        text-align: right;
+      }
+
+      .price-cell {
+        font-family: Arial, sans-serif;
+        font-size: 10pt;
+        text-align: right;
+      }
+    }
   </style>
 </head>
 <body>
@@ -286,57 +441,114 @@
       <span class="material-symbols-rounded" style="font-size: 30px; color: var(--md-sys-color-primary);">analytics</span>
       Pārdošanas atskaišu veidotājs
     </h1>
-    <p>Grupē produktus failos pa darba lapām (sheet) un noformē drukai uz vienas A4 lapas portret režīmā.</p>
+    <p>Ģenerējiet apvienotās Excel atskaites vai nosūtiet gatavos failus uz masveida izdruku (visi sheet-i).</p>
   </div>
 
-  <div class="card">
-    <!-- 1. Ievadlogs: KODI -->
-    <div class="input-group">
-      <label for="kodsFile">1. Produktu kodu fails (KODI / KODS):</label>
-      <div class="file-drop-area" id="kodsDropArea" onclick="document.getElementById('kodsFile').click()">
-        <div class="file-info">
-          <span class="material-symbols-rounded">tag</span>
-          <span class="file-name" id="kodsFileName">Nav izvēlēts fails (velciet šeit vai spiediet pogu)</span>
-        </div>
-        <button type="button" class="btn-tonal">Izvēlēties failu</button>
-      </div>
-      <input type="file" id="kodsFile" accept=".xlsx,.xls" />
-    </div>
-
-    <!-- 2. Ievadlogs: REALIZ -->
-    <div class="input-group">
-      <label for="realizFile">2. Realizācijas datu fails (REALIZ):</label>
-      <div class="file-drop-area" id="realizDropArea" onclick="document.getElementById('realizFile').click()">
-        <div class="file-info">
-          <span class="material-symbols-rounded">table_view</span>
-          <span class="file-name" id="realizFileName">Nav izvēlēts fails (velciet šeit vai spiediet pogu)</span>
-        </div>
-        <button type="button" class="btn-tonal">Izvēlēties failu</button>
-      </div>
-      <input type="file" id="realizFile" accept=".xlsx,.xls" />
-    </div>
-  </div>
-
-  <div class="progress-bar" id="progressBar">
-    <div class="progress-fill"></div>
-  </div>
-
-  <div class="actions">
-    <div class="privacy-badge">
-      <span class="material-symbols-rounded">verified_user</span>
-      <span>100% lokāla apstrāde pārlūkā — dati netiek sūtīti uz serveri</span>
-    </div>
-
-    <button type="button" class="btn-primary" id="generateBtn" onclick="processFiles()">
-      <span class="material-symbols-rounded">download</span>
-      Ģenerēt un lejupielādēt
+  <!-- Cilnes: 1. Ģenerēt atskaites | 2. Drukāt failus -->
+  <div class="tabs-bar">
+    <button type="button" class="tab-btn active" id="tabGenBtn" onclick="switchTab('gen')">
+      <span class="material-symbols-rounded" style="font-size: 18px;">table_chart</span>
+      1. Ģenerēt atskaites
+    </button>
+    <button type="button" class="tab-btn" id="tabPrintBtn" onclick="switchTab('print')">
+      <span class="material-symbols-rounded" style="font-size: 18px;">print</span>
+      2. Masveida izdruka (visi sheet-i)
     </button>
   </div>
 
-  <div class="status-box" id="statusBox"></div>
+  <!-- PANELIS 1: ATSKAIŠU ĢENERĒŠANA -->
+  <div class="tab-panel active" id="panelGen">
+    <div class="card">
+      <div class="input-group">
+        <label for="kodsFile">1. Produktu kodu fails (KODI / KODS):</label>
+        <div class="file-drop-area" id="kodsDropArea" onclick="document.getElementById('kodsFile').click()">
+          <div class="file-info">
+            <span class="material-symbols-rounded">tag</span>
+            <span class="file-name" id="kodsFileName">Nav izvēlēts fails (velciet šeit vai spiediet pogu)</span>
+          </div>
+          <button type="button" class="btn-tonal">Izvēlēties failu</button>
+        </div>
+        <input type="file" id="kodsFile" accept=".xlsx,.xls" />
+      </div>
+
+      <div class="input-group">
+        <label for="realizFile">2. Realizācijas datu fails (REALIZ):</label>
+        <div class="file-drop-area" id="realizDropArea" onclick="document.getElementById('realizFile').click()">
+          <div class="file-info">
+            <span class="material-symbols-rounded">table_view</span>
+            <span class="file-name" id="realizFileName">Nav izvēlēts fails (velciet šeit vai spiediet pogu)</span>
+          </div>
+          <button type="button" class="btn-tonal">Izvēlēties failu</button>
+        </div>
+        <input type="file" id="realizFile" accept=".xlsx,.xls" />
+      </div>
+    </div>
+
+    <div class="progress-bar" id="progressBar">
+      <div class="progress-fill"></div>
+    </div>
+
+    <div class="actions">
+      <div class="privacy-badge">
+        <span class="material-symbols-rounded">verified_user</span>
+        <span>100% lokāla apstrāde pārlūkā</span>
+      </div>
+
+      <button type="button" class="btn-primary" id="generateBtn" onclick="processFiles()">
+        <span class="material-symbols-rounded">download</span>
+        Ģenerēt un lejupielādēt
+      </button>
+    </div>
+
+    <div class="status-box" id="statusBox"></div>
+  </div>
+
+  <!-- PANELIS 2: MASVEIDA IZDRUKA UZ PRINTERI -->
+  <div class="tab-panel" id="panelPrint">
+    <div class="card">
+      <div class="input-group">
+        <label for="printFilesInput">Izvēlieties vienu vai vairākus .xlsx / .xls atskaišu failus drukāšanai:</label>
+        <div class="file-drop-area" id="printDropArea" onclick="document.getElementById('printFilesInput').click()">
+          <div class="file-info">
+            <span class="material-symbols-rounded">folder_open</span>
+            <span class="file-name" id="printFilesLabel">Nav izvēlēti faili (varat iezīmēt vairākus failus vienlaikus)</span>
+          </div>
+          <button type="button" class="btn-tonal">Izvēlēties failus</button>
+        </div>
+        <input type="file" id="printFilesInput" accept=".xlsx,.xls" multiple />
+        <ul class="selected-files-list" id="selectedPrintList"></ul>
+      </div>
+    </div>
+
+    <div class="actions">
+      <div class="privacy-badge">
+        <span class="material-symbols-rounded">print</span>
+        <span>Katra darba lapa (sheet) tiks izdrukāta uz atsevišķas A4 lapas</span>
+      </div>
+
+      <button type="button" class="btn-primary" id="printAllBtn" onclick="printSelectedWorkbooks()">
+        <span class="material-symbols-rounded">print</span>
+        Drukāt visus sheet-us
+      </button>
+    </div>
+
+    <div class="status-box" id="printStatusBox"></div>
+  </div>
 </div>
 
+<!-- Slēptais konteiners, kurā tiek ielādētas visas lapas drukai -->
+<div id="printMount"></div>
+
 <script>
+  // Ciļņu pārslēgšana
+  function switchTab(tabName) {
+    document.getElementById('tabGenBtn').classList.toggle('active', tabName === 'gen');
+    document.getElementById('tabPrintBtn').classList.toggle('active', tabName === 'print');
+    document.getElementById('panelGen').classList.toggle('active', tabName === 'gen');
+    document.getElementById('panelPrint').classList.toggle('active', tabName === 'print');
+  }
+
+  // Failu izvēles un Drag & Drop apstrāde (1 failam)
   function setupFileInput(inputId, dropAreaId, labelId) {
     const input = document.getElementById(inputId);
     const dropArea = document.getElementById(dropAreaId);
@@ -375,6 +587,159 @@
   setupFileInput('kodsFile', 'kodsDropArea', 'kodsFileName');
   setupFileInput('realizFile', 'realizDropArea', 'realizFileName');
 
+  // Vairāku failu izvēle drukai
+  const printInput = document.getElementById('printFilesInput');
+  const printDropArea = document.getElementById('printDropArea');
+  const printFilesLabel = document.getElementById('printFilesLabel');
+  const selectedPrintList = document.getElementById('selectedPrintList');
+
+  function updatePrintFilesUI(files) {
+    selectedPrintList.innerHTML = '';
+    if (!files || files.length === 0) {
+      printFilesLabel.textContent = 'Nav izvēlēti faili (varat iezīmēt vairākus failus vienlaikus)';
+      printFilesLabel.classList.remove('selected');
+      return;
+    }
+
+    printFilesLabel.textContent = `Izvēlēti ${files.length} faili drukai`;
+    printFilesLabel.classList.add('selected');
+
+    Array.from(files).forEach(f => {
+      const li = document.createElement('li');
+      li.innerHTML = `<span>📄 ${escapeHtml(f.name)}</span><span style="color:#666; font-size:12px;">${(f.size / 1024).toFixed(1)} KB</span>`;
+      selectedPrintList.appendChild(li);
+    });
+  }
+
+  printInput.addEventListener('change', () => updatePrintFilesUI(printInput.files));
+
+  ['dragenter', 'dragover'].forEach(evt => {
+    printDropArea.addEventListener(evt, (e) => {
+      e.preventDefault();
+      printDropArea.classList.add('drag-over');
+    });
+  });
+
+  ['dragleave', 'drop'].forEach(evt => {
+    printDropArea.addEventListener(evt, (e) => {
+      e.preventDefault();
+      printDropArea.classList.remove('drag-over');
+    });
+  });
+
+  printDropArea.addEventListener('drop', (e) => {
+    if (e.dataTransfer.files.length > 0) {
+      printInput.files = e.dataTransfer.files;
+      updatePrintFilesUI(printInput.files);
+    }
+  });
+
+  function escapeHtml(str) {
+    return String(str ?? '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  // =====================================================================
+  // MASVEIDA IZDRUKAS FUNKCIJA (Nolasa visus failus un visus to sheet-us)
+  // =====================================================================
+  async function printSelectedWorkbooks() {
+    const statusBox = document.getElementById('printStatusBox');
+    const printMount = document.getElementById('printMount');
+    statusBox.className = 'status-box';
+    statusBox.innerHTML = '';
+    printMount.innerHTML = '';
+
+    if (!printInput.files || printInput.files.length === 0) {
+      showError('Lūdzu izvēlieties vismaz vienu Excel (.xlsx / .xls) failu drukāšanai!', statusBox);
+      return;
+    }
+
+    try {
+      let totalSheetsCount = 0;
+
+      for (const file of Array.from(printInput.files)) {
+        const buffer = await file.arrayBuffer();
+        const workbook = XLSX.read(buffer, { type: 'array' });
+
+        for (const sheetName of workbook.SheetNames) {
+          const sheet = workbook.Sheets[sheetName];
+          // Iegūstam formatētās vērtības (raw: false)
+          const rows = XLSX.utils.sheet_to_json(sheet, { header: 1, raw: false, defval: '' });
+          if (!rows || rows.length === 0) continue;
+
+          totalSheetsCount++;
+          const pageDiv = document.createElement('div');
+          pageDiv.className = 'print-sheet-page';
+
+          // Faila un lapas norāde augšējā stūrī (neuzkrītoša)
+          const metaDiv = document.createElement('div');
+          metaDiv.className = 'print-file-tag';
+          metaDiv.textContent = `${file.name} — Lapa: ${sheetName}`;
+          pageDiv.appendChild(metaDiv);
+
+          const table = document.createElement('table');
+          table.className = 'report-table';
+
+          const maxRows = Math.min(rows.length, 25);
+          for (let r = 0; r < maxRows; r++) {
+            const rowData = rows[r] || [];
+            const tr = document.createElement('tr');
+            if (r === 0) {
+              tr.className = 'report-header-row';
+            }
+
+            // Nodrošinām 8 kolonnas (A-H)
+            for (let c = 0; c < 8; c++) {
+              const td = document.createElement('td');
+              const cellVal = rowData[c] !== undefined ? String(rowData[c]) : '';
+              td.textContent = cellVal === '' ? '\u00A0' : cellVal;
+
+              if (r === 0 && c === 0) {
+                td.className = 'report-title';
+              } else if (r === 0 && c === 5) {
+                td.className = 'report-code';
+              } else if (c === 2 && cellVal.trim() === 'kopā:') {
+                td.className = 'label-right';
+              } else if (c === 4 || c === 5) {
+                td.className = 'num-cell';
+              } else if (c === 7) {
+                td.className = 'price-cell';
+              }
+
+              tr.appendChild(td);
+            }
+            table.appendChild(tr);
+          }
+
+          pageDiv.appendChild(table);
+          printMount.appendChild(pageDiv);
+        }
+      }
+
+      if (totalSheetsCount === 0) {
+        showError('Izvēlētajos failos netika atrastas darba lapas ar datiem!', statusBox);
+        return;
+      }
+
+      statusBox.className = 'status-box success';
+      statusBox.innerHTML = `<strong>Sagatavots drukai!</strong> Kopā <strong>${totalSheetsCount}</strong> darba lapas (sheet) no <strong>${printInput.files.length}</strong> failiem. Atveras drukas logs...`;
+
+      // Neliela aizture, lai pārlūks paspēj uzzīmēt tabulas pirms drukas dialoga atvēršanas
+      setTimeout(() => {
+        window.print();
+      }, 250);
+
+    } catch (err) {
+      showError(`Kļūda nolasot failus drukai: ${err.message || err}`, statusBox);
+    }
+  }
+
+  // =====================================================================
+  // ATSKAIŠU ĢENERĒŠANAS FUNKCIJAS (1. cilne)
+  // =====================================================================
   async function readExcelToArrays(file) {
     const buffer = await file.arrayBuffer();
     const workbook = XLSX.read(buffer, { type: 'array' });
@@ -407,7 +772,6 @@
     return codes;
   }
 
-  // Vienmēr pārsauc kolonnas: A -> KLIENTS, B -> KODS, C -> NOSAUKUMS, D -> Daudzums, E -> SUMMA
   function normalizeRealizRows(sheetsData) {
     const firstSheetName = sheetsData.sheetNames[0];
     const rows = sheetsData.sheets[firstSheetName];
