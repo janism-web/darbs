@@ -284,7 +284,9 @@
 
       const lines = [];
       for (const it of items) {
-        const existing = lines.find(l => Math.abs(l.y - it.y) <= 2.0 && Math.abs(it.x - l.endX) < 35);
+        // Tabulas kolonnu zonā (x > 265) neapvieno atsevišķus šūnu skaitļus vienā rindā!
+        const maxGap = it.x > 265 ? 3.5 : 35;
+        const existing = lines.find(l => Math.abs(l.y - it.y) <= 2.0 && Math.abs(it.x - l.endX) < maxGap);
         if (existing) {
           if (it.x - existing.endX > 1.5 && !existing.text.endsWith(" ") && !it.str.startsWith(" ")) {
             existing.text += " ";
@@ -417,7 +419,15 @@
                 if (kol.x >= 270 && kol.x < 329) kolonnas.cena = kol.text;
                 else if (kol.x >= 329 && kol.x < 387) kolonnas.daudzums = kol.text;
                 else if (kol.x >= 387 && kol.x < 445) kolonnas.summa_bez = kol.text;
-                else if (kol.x >= 445 && kol.x < 503) kolonnas.pvn = kol.text;
+                else if (kol.x >= 445 && kol.x < 503) {
+                  const m = kol.text.match(/^([\d.,]+\s*(?:Eur|EUR|€)?)\s+([\d.,]+\s*(?:Eur|EUR|€)?)$/i);
+                  if (m) {
+                    kolonnas.pvn = m[1].trim();
+                    kolonnas.summa_ar = m[2].trim();
+                  } else {
+                    kolonnas.pvn = kol.text;
+                  }
+                }
                 else if (kol.x >= 503 && kol.x < 562) kolonnas.summa_ar = kol.text;
               }
             }
@@ -441,7 +451,15 @@
             for (const kol of lines) {
               if (Math.abs(kol.y - r.y) <= 5) {
                 if (kol.x >= 387 && kol.x < 445) kopaKol.summa_bez = kol.text;
-                else if (kol.x >= 445 && kol.x < 503) kopaKol.pvn = kol.text;
+                else if (kol.x >= 445 && kol.x < 503) {
+                  const m = kol.text.match(/^([\d.,]+\s*(?:Eur|EUR|€)?)\s+([\d.,]+\s*(?:Eur|EUR|€)?)$/i);
+                  if (m) {
+                    kopaKol.pvn = m[1].trim();
+                    kopaKol.summa_ar = m[2].trim();
+                  } else {
+                    kopaKol.pvn = kol.text;
+                  }
+                }
                 else if (kol.x >= 503 && kol.x < 562) kopaKol.summa_ar = kol.text;
               }
             }
