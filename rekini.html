@@ -522,6 +522,7 @@
         ));
 
         let pircejaAdresesY = null;
+        let pircejaPvnY = null;
         let pircejaX = 34.0;
         let galvenesApaksejaisY = null;
 
@@ -547,6 +548,10 @@
             pircejaX = r.x;
           }
 
+          if (pircejaAdresesY !== null && pircejaPvnY === null && r.y > pircejaAdresesY && r.y <= pircejaAdresesY + 25 && (r.text.startsWith("PVN") || r.text.includes("VRN") || r.text.includes("Reģ"))) {
+            pircejaPvnY = r.y;
+          }
+
           if (dzesamieBloki.some(prefix => r.text.startsWith(prefix))) {
             drawWhiteRectTopDown(r.x - 2, r.y - r.size - 1, (r.endX - r.x) + 10, r.size + 5);
             continue;
@@ -558,7 +563,8 @@
         }
 
         if (pageIdx === 0 && pircejaAdresesY !== null && ligumaNr.trim()) {
-          drawTextTopDown(ligumaNr.trim(), pircejaX, pircejaAdresesY + 14, 9.0, false);
+          const baseBottomY = pircejaPvnY !== null ? pircejaPvnY : pircejaAdresesY;
+          drawTextTopDown(ligumaNr.trim(), pircejaX, baseBottomY + 14, 9.0, false);
         }
 
         if (produkti.length > 0) {
