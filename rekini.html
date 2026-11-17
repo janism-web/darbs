@@ -622,13 +622,20 @@
 
           if (kopsavilkums.length > 0) {
             const summaY = currentY + 38.97;
-            // Izlīdzina kopsavilkuma bloku ("Summa:", "PVN:", "Summa apmaksai:") pa kreisi atbilstoši platākajai rindai ("Summa apmaksai:")
-            const minSummaX = Math.min(...kopsavilkums.map(r => r.x));
+            const rightEdgeX = colX[colX.length - 1]; // 560.89 — tabulas labā mala
             kopsavilkums.forEach((sRinda, idxS) => {
               const rindaY = summaY + idxS * 13.83;
-              const shiftX = minSummaX - sRinda.x;
+              // Aprēķina rindas kopējo platumu ar iebūvēto fontu, lai precīzi izlīdzinātu pa labi
+              let rowWidth = 0;
               for (const sp of sRinda.spans) {
-                drawTextTopDown(sp.text, sp.x + shiftX, rindaY, 9.0, sp.isBold);
+                const fontObj = sp.isBold ? fontBold : fontReg;
+                rowWidth += fontObj.widthOfTextAtSize(sp.text, 9.0);
+              }
+              let drawX = rightEdgeX - rowWidth;
+              for (const sp of sRinda.spans) {
+                const fontObj = sp.isBold ? fontBold : fontReg;
+                drawTextTopDown(sp.text, drawX, rindaY, 9.0, sp.isBold);
+                drawX += fontObj.widthOfTextAtSize(sp.text, 9.0);
               }
             });
             currentY = summaY + (kopsavilkums.length - 1) * 13.83;
