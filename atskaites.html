@@ -2,8 +2,13 @@
 <html lang="lv">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Pārdošanas atskaišu veidotājs — Material 3</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Pārdošanas atskaites — Material 3</title>
+  <meta name="theme-color" content="#6750A4" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <link rel="manifest" href="manifest.json" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet" />
@@ -29,6 +34,23 @@
     localStorage.setItem('m3-theme', next);
     const icon = document.getElementById('themeIcon');
     if (icon) icon.textContent = next === 'dark' ? 'light_mode' : 'dark_mode';
+  }
+
+  let snackbarTimer = null;
+  function showM3Snackbar(text) {
+    let sb = document.getElementById('m3Snackbar');
+    if (!sb) {
+      sb = document.createElement('div');
+      sb.id = 'm3Snackbar';
+      sb.className = 'm3-snackbar';
+      document.body.appendChild(sb);
+    }
+    sb.textContent = text;
+    sb.classList.add('show');
+    clearTimeout(snackbarTimer);
+    snackbarTimer = setTimeout(() => {
+      sb.classList.remove('show');
+    }, 3500);
   }
 
   window.addEventListener('DOMContentLoaded', () => {
@@ -68,7 +90,8 @@
       }
 
       .m3-top-app-bar,
-      .m3-main-wrapper {
+      .m3-main-wrapper,
+      .m3-snackbar {
         display: none !important;
       }
 
@@ -142,7 +165,7 @@
 
   <header class="m3-top-app-bar">
     <div class="m3-top-bar-left">
-      <a href="index.html" class="m3-icon-btn" title="Atpakaļ uz rīku izvēlni" aria-label="Atpakaļ">
+      <a href="index.html" class="m3-icon-btn" title="Atpakaļ uz sākumlapu" aria-label="Atpakaļ">
         <span class="material-symbols-rounded">arrow_back</span>
       </a>
       <div class="m3-top-bar-title">
@@ -159,20 +182,24 @@
     <div class="m3-surface-sheet">
       <div class="m3-headline-group">
         <h1 class="m3-headline-medium">Pārdošanas atskaišu veidotājs</h1>
-        <p class="m3-body-medium">Ģenerējiet apvienotās Excel atskaites pa darba lapām (sheet) vai nosūtiet gatavos failus uz masveida A4 izdruku.</p>
+        <p class="m3-body-medium">Ģenerējiet apvienotās Excel atskaites pa darba lapām (sheet) vai nosūtiet gatavos failus uz A4 izdruku / PDF saglabāšanu.</p>
       </div>
 
+      <!-- M3 Segmented Buttons (48dp touch height + checkmark) -->
       <div class="m3-segmented-group" role="tablist">
         <button type="button" class="m3-segment-btn active" id="tabGenBtn" onclick="switchTab('gen')">
-          <span class="material-symbols-rounded" style="font-size: 18px;">table_chart</span>
-          <span>1. Ģenerēt atskaites</span>
+          <span class="material-symbols-rounded m3-segment-check">check</span>
+          <span class="material-symbols-rounded m3-segment-icon" style="font-size: 18px;">table_chart</span>
+          <span>Ģenerēt</span>
         </button>
         <button type="button" class="m3-segment-btn" id="tabPrintBtn" onclick="switchTab('print')">
-          <span class="material-symbols-rounded" style="font-size: 18px;">print</span>
-          <span>2. Masveida izdruka (visi sheet-i)</span>
+          <span class="material-symbols-rounded m3-segment-check">check</span>
+          <span class="material-symbols-rounded m3-segment-icon" style="font-size: 18px;">print</span>
+          <span>Drukāt (visi sheet-i)</span>
         </button>
       </div>
 
+      <!-- PANELIS 1: ATSKAIŠU ĢENERĒŠANA -->
       <div class="tab-panel active" id="panelGen">
         <div class="m3-card-filled">
           <div>
@@ -180,11 +207,19 @@
             <div class="m3-dropzone" id="kodsDropArea" onclick="document.getElementById('kodsFile').click()">
               <div class="m3-dropzone-info">
                 <span class="material-symbols-rounded m3-dropzone-icon">tag</span>
-                <span class="m3-file-name" id="kodsFileName">Nav izvēlēts fails (ievelciet šeit vai spiediet pogu)</span>
+                <div class="m3-dropzone-text-wrap">
+                  <span class="m3-file-name" id="kodsFileName">Nav izvēlēts fails</span>
+                  <span class="m3-file-sub" id="kodsFileNameSub">Atbalsta .xlsx un .xls failus</span>
+                </div>
               </div>
-              <button type="button" class="m3-btn-tonal">Izvēlēties failu</button>
+              <div class="m3-dropzone-actions">
+                <button type="button" class="m3-clear-file-btn" id="kodsFileClear" onclick="clearSingleInput(event, 'kodsFile', 'kodsFileName', 'Nav izvēlēts fails')" title="Noņemt failu" aria-label="Noņemt failu">
+                  <span class="material-symbols-rounded">close</span>
+                </button>
+                <button type="button" class="m3-btn-tonal">Izvēlēties</button>
+              </div>
             </div>
-            <input type="file" id="kodsFile" accept=".xlsx,.xls" />
+            <input type="file" id="kodsFile" accept=".xlsx,.xls,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel" />
           </div>
 
           <div>
@@ -192,11 +227,19 @@
             <div class="m3-dropzone" id="realizDropArea" onclick="document.getElementById('realizFile').click()">
               <div class="m3-dropzone-info">
                 <span class="material-symbols-rounded m3-dropzone-icon">table_view</span>
-                <span class="m3-file-name" id="realizFileName">Nav izvēlēts fails (ievelciet šeit vai spiediet pogu)</span>
+                <div class="m3-dropzone-text-wrap">
+                  <span class="m3-file-name" id="realizFileName">Nav izvēlēts fails</span>
+                  <span class="m3-file-sub" id="realizFileNameSub">Atbalsta .xlsx un .xls failus</span>
+                </div>
               </div>
-              <button type="button" class="m3-btn-tonal">Izvēlēties failu</button>
+              <div class="m3-dropzone-actions">
+                <button type="button" class="m3-clear-file-btn" id="realizFileClear" onclick="clearSingleInput(event, 'realizFile', 'realizFileName', 'Nav izvēlēts fails')" title="Noņemt failu" aria-label="Noņemt failu">
+                  <span class="material-symbols-rounded">close</span>
+                </button>
+                <button type="button" class="m3-btn-tonal">Izvēlēties</button>
+              </div>
             </div>
-            <input type="file" id="realizFile" accept=".xlsx,.xls" />
+            <input type="file" id="realizFile" accept=".xlsx,.xls,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel" />
           </div>
         </div>
 
@@ -207,7 +250,7 @@
         <div class="m3-actions-row">
           <div class="m3-chip">
             <span class="material-symbols-rounded">verified_user</span>
-            <span>Dati paliek tikai jūsu datorā</span>
+            <span>Dati paliek tikai jūsu ierīcē</span>
           </div>
 
           <button type="button" class="m3-btn-filled" id="generateBtn" onclick="processFiles()">
@@ -219,18 +262,24 @@
         <div class="m3-banner" id="statusBox"></div>
       </div>
 
+      <!-- PANELIS 2: MASVEIDA IZDRUKA UZ PRINTERI VAI PDF -->
       <div class="tab-panel" id="panelPrint">
         <div class="m3-card-filled">
           <div>
-            <label class="m3-field-label" for="printFilesInput">IZVĒLIETIES VIENU VAI VAIRĀKUS .XLSX / .XLS FAILUS DRUKĀŠANAI</label>
+            <label class="m3-field-label" for="printFilesInput">IZVĒLIETIES VIENU VAI VAIRĀKUS .XLSX / .XLS FAILUS</label>
             <div class="m3-dropzone" id="printDropArea" onclick="document.getElementById('printFilesInput').click()">
               <div class="m3-dropzone-info">
                 <span class="material-symbols-rounded m3-dropzone-icon">folder_open</span>
-                <span class="m3-file-name" id="printFilesLabel">Nav izvēlēti faili (varat iezīmēt vairākus failus vienlaikus)</span>
+                <div class="m3-dropzone-text-wrap">
+                  <span class="m3-file-name" id="printFilesLabel">Nav izvēlēti faili</span>
+                  <span class="m3-file-sub">Varat iezīmēt vairākus failus vienlaikus</span>
+                </div>
               </div>
-              <button type="button" class="m3-btn-tonal">Izvēlēties failus</button>
+              <div class="m3-dropzone-actions">
+                <button type="button" class="m3-btn-tonal">Izvēlēties failus</button>
+              </div>
             </div>
-            <input type="file" id="printFilesInput" accept=".xlsx,.xls" multiple />
+            <input type="file" id="printFilesInput" accept=".xlsx,.xls,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel" multiple />
             <ul class="m3-file-list" id="selectedPrintList"></ul>
           </div>
         </div>
@@ -238,7 +287,7 @@
         <div class="m3-actions-row">
           <div class="m3-chip">
             <span class="material-symbols-rounded">description</span>
-            <span>Katrs sheet = 1 A4 Portrait lapa</span>
+            <span>Katrs sheet = 1 A4 lapa (Printeris / PDF)</span>
           </div>
 
           <button type="button" class="m3-btn-filled" id="printAllBtn" onclick="printSelectedWorkbooks()">
@@ -255,6 +304,22 @@
   <div id="printMount"></div>
 
   <script>
+
+  function clearSingleInput(event, inputId, labelId, defaultText) {
+    event.stopPropagation();
+    const inp = document.getElementById(inputId);
+    const lbl = document.getElementById(labelId);
+    const sub = document.getElementById(labelId + 'Sub');
+    const clr = document.getElementById(inputId + 'Clear');
+    if (inp) inp.value = '';
+    if (lbl) {
+      lbl.textContent = defaultText;
+      lbl.classList.remove('selected');
+    }
+    if (sub) sub.textContent = 'Atbalsta .xlsx un .xls failus';
+    if (clr) clr.classList.remove('visible');
+  }
+
   // Ciļņu pārslēgšana
   function switchTab(tabName) {
     document.getElementById('tabGenBtn').classList.toggle('active', tabName === 'gen');
@@ -271,7 +336,7 @@
 
     input.addEventListener('change', () => {
       if (input.files.length > 0) {
-        label.textContent = input.files[0].name;
+        label.textContent = input.files[0].name; const sub = document.getElementById(labelId + 'Sub'); if(sub) sub.textContent = (input.files[0].size / 1024).toFixed(1) + ' KB • Gatavs'; const clr = document.getElementById(inputId + 'Clear'); if(clr) clr.classList.add('visible');
         label.classList.add('selected');
       }
     });
@@ -293,7 +358,7 @@
     dropArea.addEventListener('drop', (e) => {
       if (e.dataTransfer.files.length > 0) {
         input.files = e.dataTransfer.files;
-        label.textContent = input.files[0].name;
+        label.textContent = input.files[0].name; const sub = document.getElementById(labelId + 'Sub'); if(sub) sub.textContent = (input.files[0].size / 1024).toFixed(1) + ' KB • Gatavs'; const clr = document.getElementById(inputId + 'Clear'); if(clr) clr.classList.add('visible');
         label.classList.add('selected');
       }
     });
@@ -439,7 +504,7 @@
         return;
       }
 
-      statusBox.className = 'm3-banner success';
+      statusBox.className = 'm3-banner success'; statusBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); showM3Snackbar('Atskaites veiksmīgi uzģenerētas!');;
       statusBox.innerHTML = `<strong>Sagatavots drukai!</strong> Kopā <strong>${totalSheetsCount}</strong> darba lapas (sheet) no <strong>${printInput.files.length}</strong> failiem. Atveras drukas logs...`;
 
       // Neliela aizture, lai pārlūks paspēj uzzīmēt tabulas pirms drukas dialoga atvēršanas
@@ -892,7 +957,7 @@
         htmlMsg += `<p style="margin-top:8px; font-size:13px;"><strong>Netika atrasti dati šādiem kodiem (${skipped.length}):</strong> ${skipped.join(', ')}</p>`;
       }
 
-      statusBox.className = 'm3-banner success';
+      statusBox.className = 'm3-banner success'; statusBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); showM3Snackbar('Atskaites veiksmīgi uzģenerētas!');;
       statusBox.innerHTML = htmlMsg;
 
     } catch (err) {
@@ -904,7 +969,7 @@
   }
 
   function showError(msg, box) {
-    box.className = 'm3-banner error';
+    box.className = 'm3-banner error'; box.scrollIntoView({ behavior: 'smooth', block: 'nearest' });;
     box.innerHTML = `<strong>Kļūda:</strong> ${msg}`;
   }
 

@@ -1,9 +1,13 @@
 /* ==========================================================================
-   Google Material Design 3 (M3) — Kopējā dizaina sistēma (Design Tokens)
-   Atbalsta gan gaišo (Light), gan tumšo (Dark) režīmu
+   Google Material Design 3 (M3) & Android Mobile Ergonomics — Kopējais stils
+   - 48dp (48px) minimālais skārienmērķu augstums (Android Accessibility)
+   - Dynamic Viewport Height (100dvh) + Safe Area Insets
+   - M3 Tonal Surface Hierarchy (Light & Dark Mode)
+   - M3 Snackbar paziņojumi
    ========================================================================== */
 
 :root {
+  /* M3 Light Scheme */
   --md-sys-color-primary: #6750A4;
   --md-sys-color-on-primary: #FFFFFF;
   --md-sys-color-primary-container: #EADDFF;
@@ -28,6 +32,10 @@
   --md-sys-color-success-container: #C4EED0;
   --md-sys-color-on-success-container: #072711;
 
+  --md-sys-color-inverse-surface: #322F35;
+  --md-sys-color-inverse-on-surface: #F5EFF7;
+  --md-sys-color-inverse-primary: #D0BCFF;
+
   --md-sys-color-background: #FEF7FF;
   --md-sys-color-on-background: #1D1B20;
   --md-sys-color-surface: #FEF7FF;
@@ -46,6 +54,7 @@
 
   --md-sys-elevation-1: 0px 1px 2px rgba(0, 0, 0, 0.3), 0px 1px 3px 1px rgba(0, 0, 0, 0.15);
   --md-sys-elevation-2: 0px 1px 2px rgba(0, 0, 0, 0.3), 0px 2px 6px 2px rgba(0, 0, 0, 0.15);
+  --md-sys-elevation-3: 0px 4px 8px 3px rgba(0, 0, 0, 0.15), 0px 1px 3px rgba(0, 0, 0, 0.3);
 
   --md-sys-shape-corner-small: 8px;
   --md-sys-shape-corner-medium: 12px;
@@ -58,6 +67,7 @@
   --md-sys-motion-duration-medium: 300ms;
 }
 
+/* M3 Dark Scheme */
 [data-theme="dark"] {
   --md-sys-color-primary: #D0BCFF;
   --md-sys-color-on-primary: #381E72;
@@ -83,6 +93,10 @@
   --md-sys-color-success-container: #0F5223;
   --md-sys-color-on-success-container: #C4EED0;
 
+  --md-sys-color-inverse-surface: #E6E0E9;
+  --md-sys-color-inverse-on-surface: #322F35;
+  --md-sys-color-inverse-primary: #6750A4;
+
   --md-sys-color-background: #141218;
   --md-sys-color-on-background: #E6E0E9;
   --md-sys-color-surface: #141218;
@@ -104,6 +118,7 @@
   box-sizing: border-box;
   margin: 0;
   padding: 0;
+  -webkit-tap-highlight-color: transparent;
 }
 
 body {
@@ -111,30 +126,35 @@ body {
   background-color: var(--md-sys-color-background);
   color: var(--md-sys-color-on-background);
   min-height: 100vh;
+  min-height: 100dvh;
   display: flex;
   flex-direction: column;
+  padding-bottom: env(safe-area-inset-bottom, 0px);
   transition: background-color var(--md-sys-motion-duration-medium) var(--md-sys-motion-easing-standard),
               color var(--md-sys-motion-duration-medium) var(--md-sys-motion-easing-standard);
   -webkit-font-smoothing: antialiased;
 }
 
+/* M3 Top App Bar (64dp height standard) */
 .m3-top-app-bar {
   position: sticky;
   top: 0;
   z-index: 100;
+  min-height: 64px;
   background-color: var(--md-sys-color-surface);
   border-bottom: 1px solid var(--md-sys-color-outline-variant);
-  padding: 12px 24px;
+  padding: 8px 16px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
+  gap: 12px;
 }
 
 .m3-top-bar-left {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 8px;
+  overflow: hidden;
 }
 
 .m3-top-bar-title {
@@ -144,11 +164,17 @@ body {
   display: flex;
   align-items: center;
   gap: 10px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
+/* Android 48dp x 48dp minimum touch target */
 .m3-icon-btn {
-  width: 40px;
-  height: 40px;
+  width: 48px;
+  height: 48px;
+  min-width: 48px;
+  min-height: 48px;
   border-radius: var(--md-sys-shape-corner-full);
   border: none;
   background: transparent;
@@ -161,7 +187,8 @@ body {
   transition: background-color var(--md-sys-motion-duration-short) var(--md-sys-motion-easing-standard);
 }
 
-.m3-icon-btn:hover {
+.m3-icon-btn:hover,
+.m3-icon-btn:active {
   background-color: var(--md-sys-color-surface-container-highest);
   color: var(--md-sys-color-on-surface);
 }
@@ -171,24 +198,24 @@ body {
   width: 100%;
   max-width: 840px;
   margin: 0 auto;
-  padding: 28px 20px 48px;
+  padding: 20px 16px calc(32px + env(safe-area-inset-bottom, 0px));
 }
 
 .m3-surface-sheet {
   background-color: var(--md-sys-color-surface-container-low);
   border: 1px solid var(--md-sys-color-outline-variant);
   border-radius: var(--md-sys-shape-corner-extra-large);
-  padding: 28px;
+  padding: 24px;
 }
 
 .m3-headline-group {
-  margin-bottom: 24px;
+  margin-bottom: 20px;
 }
 
 .m3-headline-medium {
-  font-size: 28px;
+  font-size: 26px;
   font-weight: 400;
-  line-height: 36px;
+  line-height: 34px;
   color: var(--md-sys-color-on-surface);
   margin-bottom: 6px;
 }
@@ -201,20 +228,22 @@ body {
   color: var(--md-sys-color-on-surface-variant);
 }
 
+/* M3 Segmented Button Group (48dp touch height + checkmark) */
 .m3-segmented-group {
   display: flex;
   border: 1px solid var(--md-sys-color-outline);
   border-radius: var(--md-sys-shape-corner-full);
   overflow: hidden;
-  margin-bottom: 24px;
+  margin-bottom: 20px;
   background-color: var(--md-sys-color-surface-container-lowest);
 }
 
 .m3-segment-btn {
   flex: 1;
+  min-height: 48px;
   border: none;
   background: transparent;
-  padding: 10px 18px;
+  padding: 8px 16px;
   font-family: inherit;
   font-size: 14px;
   font-weight: 500;
@@ -242,6 +271,20 @@ body {
   color: var(--md-sys-color-on-secondary-container);
 }
 
+.m3-segment-check {
+  display: none;
+  font-size: 18px;
+}
+
+.m3-segment-btn.active .m3-segment-check {
+  display: inline-block;
+}
+
+.m3-segment-btn.active .m3-segment-icon {
+  display: none;
+}
+
+/* M3 Filled Card */
 .m3-card-filled {
   background-color: var(--md-sys-color-surface-container);
   border-radius: var(--md-sys-shape-corner-large);
@@ -257,19 +300,42 @@ body {
   font-weight: 500;
   letter-spacing: 0.5px;
   color: var(--md-sys-color-on-surface-variant);
-  margin-bottom: 6px;
+  margin-bottom: 8px;
   display: block;
 }
 
+/* M3 Outlined TextField */
+.m3-outlined-input {
+  width: 100%;
+  min-height: 52px;
+  padding: 12px 16px;
+  font-family: inherit;
+  font-size: 16px; /* Prevents iOS/Android auto-zoom on focus */
+  color: var(--md-sys-color-on-surface);
+  background-color: var(--md-sys-color-surface-container-lowest);
+  border: 1px solid var(--md-sys-color-outline);
+  border-radius: var(--md-sys-shape-corner-medium);
+  transition: border-color var(--md-sys-motion-duration-short);
+}
+
+.m3-outlined-input:focus {
+  outline: none;
+  border-color: var(--md-sys-color-primary);
+  border-width: 2px;
+  padding: 11px 15px;
+}
+
+/* M3 Mobile-Friendly Dropzone (56dp+ touch height) */
 .m3-dropzone {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
+  min-height: 56px;
   background-color: var(--md-sys-color-surface-container-lowest);
   border: 1px solid var(--md-sys-color-outline);
   border-radius: var(--md-sys-shape-corner-medium);
-  padding: 12px 16px;
+  padding: 10px 14px;
   cursor: pointer;
   transition: border-color var(--md-sys-motion-duration-short),
               background-color var(--md-sys-motion-duration-short);
@@ -279,7 +345,7 @@ body {
 .m3-dropzone.drag-over {
   border-color: var(--md-sys-color-primary);
   border-width: 2px;
-  padding: 11px 15px;
+  padding: 9px 13px;
   background-color: var(--md-sys-color-surface-container-low);
 }
 
@@ -288,12 +354,19 @@ body {
   align-items: center;
   gap: 12px;
   overflow: hidden;
+  flex: 1;
 }
 
 .m3-dropzone-icon {
   color: var(--md-sys-color-primary);
   font-size: 24px;
   flex-shrink: 0;
+}
+
+.m3-dropzone-text-wrap {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
 .m3-file-name {
@@ -309,15 +382,50 @@ body {
   font-weight: 500;
 }
 
+.m3-file-sub {
+  font-size: 12px;
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+.m3-dropzone-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.m3-clear-file-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--md-sys-shape-corner-full);
+  border: none;
+  background: transparent;
+  color: var(--md-sys-color-on-surface-variant);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.m3-clear-file-btn.visible {
+  display: inline-flex;
+}
+
+.m3-clear-file-btn:hover {
+  background-color: var(--md-sys-color-surface-container-highest);
+  color: var(--md-sys-color-error);
+}
+
+/* M3 Buttons — 48dp Android Touch Targets */
 .m3-btn-filled {
   background-color: var(--md-sys-color-primary);
   color: var(--md-sys-color-on-primary);
   border: none;
   border-radius: var(--md-sys-shape-corner-full);
-  height: 44px;
+  min-height: 48px;
   padding: 0 24px;
   font-family: inherit;
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 500;
   letter-spacing: 0.1px;
   cursor: pointer;
@@ -353,7 +461,7 @@ body {
   color: var(--md-sys-color-on-secondary-container);
   border: none;
   border-radius: var(--md-sys-shape-corner-full);
-  height: 36px;
+  min-height: 40px;
   padding: 0 16px;
   font-family: inherit;
   font-size: 13px;
@@ -362,6 +470,7 @@ body {
   cursor: pointer;
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 6px;
   flex-shrink: 0;
   transition: opacity var(--md-sys-motion-duration-short);
@@ -371,12 +480,34 @@ body {
   opacity: 0.88;
 }
 
+.m3-btn-outlined {
+  background-color: transparent;
+  color: var(--md-sys-color-primary);
+  border: 1px solid var(--md-sys-color-outline);
+  border-radius: var(--md-sys-shape-corner-full);
+  min-height: 48px;
+  padding: 0 20px;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.m3-btn-outlined:hover {
+  background-color: var(--md-sys-color-surface-container-high);
+}
+
+/* M3 Assist Chip */
 .m3-chip {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  height: 32px;
-  padding: 0 12px;
+  min-height: 32px;
+  padding: 4px 12px;
   border-radius: var(--md-sys-shape-corner-small);
   border: 1px solid var(--md-sys-color-outline-variant);
   background-color: var(--md-sys-color-surface-container-lowest);
@@ -390,6 +521,7 @@ body {
   color: var(--md-sys-color-success);
 }
 
+/* M3 Linear Progress Indicator */
 .m3-linear-progress {
   width: 100%;
   height: 4px;
@@ -418,6 +550,7 @@ body {
   100% { transform: translateX(260%); width: 35%; }
 }
 
+/* M3 Status Banner */
 .m3-banner {
   margin-top: 20px;
   padding: 16px 20px;
@@ -425,6 +558,7 @@ body {
   font-size: 14px;
   line-height: 1.5;
   display: none;
+  scroll-margin-top: 80px;
 }
 
 .m3-banner.error {
@@ -443,23 +577,83 @@ body {
   margin: 8px 0 8px 20px;
 }
 
+/* Selected files list */
 .m3-file-list {
   list-style: none;
   margin-top: 10px;
   display: flex;
   flex-direction: column;
   gap: 8px;
+  max-height: 240px;
+  overflow-y: auto;
 }
 
 .m3-file-list li {
   background-color: var(--md-sys-color-surface-container-lowest);
   border: 1px solid var(--md-sys-color-outline-variant);
   border-radius: var(--md-sys-shape-corner-medium);
-  padding: 8px 14px;
+  padding: 10px 14px;
   font-size: 13px;
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 10px;
+}
+
+.m3-badge {
+  padding: 4px 10px;
+  border-radius: var(--md-sys-shape-corner-full);
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.m3-badge-wait {
+  background-color: var(--md-sys-color-surface-container-highest);
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+.m3-badge-ok {
+  background-color: var(--md-sys-color-success-container);
+  color: var(--md-sys-color-on-success-container);
+}
+
+.m3-badge-err {
+  background-color: var(--md-sys-color-error-container);
+  color: var(--md-sys-color-on-error-container);
+}
+
+/* M3 Snackbar (Android floating bottom feedback) */
+.m3-snackbar {
+  position: fixed;
+  left: 16px;
+  right: 16px;
+  bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+  max-width: 520px;
+  margin: 0 auto;
+  min-height: 48px;
+  background-color: var(--md-sys-color-inverse-surface);
+  color: var(--md-sys-color-inverse-on-surface);
+  border-radius: var(--md-sys-shape-corner-small);
+  padding: 12px 16px;
+  font-size: 14px;
+  box-shadow: var(--md-sys-elevation-3);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  z-index: 999;
+  opacity: 0;
+  transform: translateY(20px);
+  pointer-events: none;
+  transition: opacity 200ms var(--md-sys-motion-easing-standard),
+              transform 200ms var(--md-sys-motion-easing-standard);
+}
+
+.m3-snackbar.show {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
 }
 
 .m3-footer {
@@ -475,17 +669,64 @@ body {
   color: var(--md-sys-color-on-surface-variant);
 }
 
+/* ==========================================================================
+   Android Mobile Responsive Rules (< 600px) — Thumb-Zone Ergonomics
+   ========================================================================== */
 @media (max-width: 600px) {
+  .m3-main-wrapper {
+    padding: 12px 12px calc(28px + env(safe-area-inset-bottom, 0px));
+  }
+
   .m3-surface-sheet {
     padding: 20px 16px;
-    border-radius: 20px;
+    border-radius: 24px;
   }
+
   .m3-headline-medium {
     font-size: 22px;
     line-height: 28px;
   }
-  .m3-segment-btn {
-    font-size: 13px;
-    padding: 10px 10px;
+
+  .m3-card-filled {
+    padding: 16px;
+  }
+
+  .m3-dropzone {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+    padding: 12px;
+  }
+
+  .m3-dropzone:hover,
+  .m3-dropzone.drag-over {
+    padding: 11px;
+  }
+
+  .m3-dropzone-actions {
+    justify-content: flex-end;
+  }
+
+  .m3-dropzone-actions .m3-btn-tonal {
+    flex: 1;
+    min-height: 44px;
+  }
+
+  /* Thumb-zone full-width primary buttons on mobile */
+  .m3-actions-row {
+    flex-direction: column-reverse;
+    align-items: stretch !important;
+    gap: 12px !important;
+  }
+
+  .m3-actions-row .m3-btn-filled,
+  .m3-actions-row .m3-btn-outlined {
+    width: 100%;
+    min-height: 52px;
+    font-size: 15px;
+  }
+
+  .m3-actions-row .m3-chip {
+    justify-content: center;
   }
 }

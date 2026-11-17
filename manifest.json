@@ -1,0 +1,10 @@
+{
+  "name": "Darba rīku portāls",
+  "short_name": "Darba Rīki",
+  "description": "Pārdošanas atskaišu veidotājs un PDF rēķinu korektors",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#FEF7FF",
+  "theme_color": "#6750A4",
+  "lang": "lv"
+}

@@ -2,8 +2,13 @@
 <html lang="lv">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Darba rīku portāls — Material 3</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Darba rīku portāls</title>
+  <meta name="theme-color" content="#6750A4" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <link rel="manifest" href="manifest.json" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet" />
@@ -26,6 +31,23 @@
     if (icon) icon.textContent = next === 'dark' ? 'light_mode' : 'dark_mode';
   }
 
+  let snackbarTimer = null;
+  function showM3Snackbar(text) {
+    let sb = document.getElementById('m3Snackbar');
+    if (!sb) {
+      sb = document.createElement('div');
+      sb.id = 'm3Snackbar';
+      sb.className = 'm3-snackbar';
+      document.body.appendChild(sb);
+    }
+    sb.textContent = text;
+    sb.classList.add('show');
+    clearTimeout(snackbarTimer);
+    snackbarTimer = setTimeout(() => {
+      sb.classList.remove('show');
+    }, 3500);
+  }
+
   window.addEventListener('DOMContentLoaded', () => {
     const current = document.documentElement.getAttribute('data-theme') || 'light';
     const icon = document.getElementById('themeIcon');
@@ -35,7 +57,7 @@
   <style>
     .m3-portal-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
       gap: 16px;
     }
 
@@ -43,10 +65,11 @@
       display: flex;
       flex-direction: column;
       justify-content: space-between;
+      min-height: 180px;
       background-color: var(--md-sys-color-surface-container);
       border: 1px solid var(--md-sys-color-outline-variant);
       border-radius: var(--md-sys-shape-corner-large);
-      padding: 24px;
+      padding: 22px;
       text-decoration: none;
       color: inherit;
       transition: transform var(--md-sys-motion-duration-short) var(--md-sys-motion-easing-standard),
@@ -55,7 +78,8 @@
                   box-shadow var(--md-sys-motion-duration-short) var(--md-sys-motion-easing-standard);
     }
 
-    .m3-tool-card:hover {
+    .m3-tool-card:hover,
+    .m3-tool-card:active {
       transform: translateY(-2px);
       background-color: var(--md-sys-color-surface-container-high);
       border-color: var(--md-sys-color-primary);
@@ -89,7 +113,7 @@
       font-size: 14px;
       line-height: 20px;
       color: var(--md-sys-color-on-surface-variant);
-      margin-bottom: 20px;
+      margin-bottom: 18px;
     }
 
     .m3-tool-footer {
@@ -99,6 +123,7 @@
       color: var(--md-sys-color-primary);
       font-size: 14px;
       font-weight: 500;
+      padding-top: 8px;
     }
   </style>
 </head>
@@ -120,10 +145,11 @@
     <div class="m3-surface-sheet">
       <div class="m3-headline-group">
         <h1 class="m3-headline-medium">Dokumentu un datu apstrāde</h1>
-        <p class="m3-body-medium">Izvēlieties nepieciešamo darba moduli. Visi aprēķini tiek veikti droši un lokāli jūsu pārlūkprogrammā.</p>
+        <p class="m3-body-medium">Izvēlieties nepieciešamo darba moduli. Visi faili tiek apstrādāti droši un lokāli jūsu ierīcē.</p>
       </div>
 
       <div class="m3-portal-grid">
+        <!-- 1. POGA: Pārdošanas atskaites -->
         <a href="atskaites.html" class="m3-tool-card">
           <div>
             <div class="m3-tool-badge">
@@ -131,7 +157,7 @@
             </div>
             <h2 class="m3-tool-title">Pārdošanas atskaites</h2>
             <p class="m3-tool-desc">
-              Atskaišu ģenerēšana no KODI un REALIZ failiem pa darba lapām (sheet), kā arī masveida izdruka uz A4 lapām.
+              Atskaišu ģenerēšana no KODI un REALIZ failiem pa darba lapām (sheet) un masveida A4 izdruka.
             </p>
           </div>
           <div class="m3-tool-footer">
@@ -140,14 +166,15 @@
           </div>
         </a>
 
+        <!-- 2. POGA: PDF Rēķinu korektors -->
         <a href="rekini.html" class="m3-tool-card">
           <div>
             <div class="m3-tool-badge" style="background-color: var(--md-sys-color-tertiary-container); color: var(--md-sys-color-on-tertiary-container);">
               <span class="material-symbols-rounded">receipt_long</span>
             </div>
-            <h2 class="m3-tool-title">Rēķinu formas labošana</h2>
+            <h2 class="m3-tool-title">PDF rēķinu korektors</h2>
             <p class="m3-tool-desc">
-              Rēķinu failu struktūras pielāgošana, lauku labošana un sagatavošana atbilstoši nepieciešamajai formai.
+              Automātiska PDF rēķinu tīrīšana, līguma numura pievienošana, tabulas izlīdzināšana un apakšējā bloka pacelšana.
             </p>
           </div>
           <div class="m3-tool-footer">
@@ -155,14 +182,16 @@
             <span class="material-symbols-rounded" style="font-size: 20px;">arrow_forward</span>
           </div>
         </a>
+
+        <!-- NĀKAMAJAI POGAI (3., 4. utt.) NOKOPĒJIET VIENU <a href="..." class="m3-tool-card"> BLOKU ŠEIT -->
       </div>
 
       <div class="m3-footer">
         <div class="m3-chip">
           <span class="material-symbols-rounded">verified_user</span>
-          <span>100% lokāla apstrāde pārlūkā</span>
+          <span>100% lokāla apstrāde ierīcē</span>
         </div>
-        <span>Material Design 3 • v2.0</span>
+        <span>Android & Web M3 • v2.1</span>
       </div>
     </div>
   </main>
