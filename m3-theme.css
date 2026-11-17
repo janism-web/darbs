@@ -240,6 +240,7 @@ body {
 
 .m3-segment-btn {
   flex: 1;
+  white-space: nowrap;
   min-height: 48px;
   border: none;
   background: transparent;
