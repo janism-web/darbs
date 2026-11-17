@@ -1,0 +1,21 @@
+====================================================================
+PDF RĒĶINU AUTOMĀTISKĀ KOREKTORA WEB VERSIJA (HTML + JavaScript)
+====================================================================
+
+KĀ ŠĪ VERSIJA DARBOJAS:
+- Viss ir iebūvēts vienā pašpietiekamā failā "index.html" (ieskaitot
+  latviešu DejaVuSans un DejaVuSans-Bold fontus).
+- Nav nepieciešams Python vai servera uzstādīšana.
+- Rēķini tiek apstrādāti tieši darbinieka pārlūkprogrammā (datorā),
+  tāpēc konfidenciālie dati nekur netiek sūtīti.
+
+KĀ IZVIETOT LIETOŠANAI VAIRĀKIEM DARBINIEKIEM:
+1. variants (Tīkla mape / SharePoint / Intranet):
+   Ieliec failu "index.html" uzņēmuma koplietotajā tīkla mapē vai iekšējā
+   tīklā — katrs darbinieks to var atvērt ar savu pārlūkprogrammu
+   (Chrome, Edge, Firefox) un apstrādāt savus rēķinus.
+
+2. variants (Tiešsaistes mājaslapa / bezmaksas hostings):
+   Augšupielādē "index.html" jebkurā statiskajā hostingā (piemēram,
+   Netlify Drop, GitHub Pages, Cloudflare Pages vai uzņēmuma mājaslapas
+   apakšmapē) un nosūti saiti kolēģiem.
