@@ -1,0 +1,845 @@
+<!DOCTYPE html>
+<html lang="lv">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pārdošanas atskaišu veidotājs</title>
+  <!-- Google Fonts: Roboto & Material Symbols -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet" />
+
+  <!-- ExcelJS, JSZip & SheetJS -->
+  <script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
+  <style>
+    :root {
+      --md-sys-color-background: #FDF8FD;
+      --md-sys-color-surface: #FDF8FD;
+      --md-sys-color-surface-container: #F3EDF7;
+      --md-sys-color-primary: #6750A4;
+      --md-sys-color-on-primary: #FFFFFF;
+      --md-sys-color-secondary-container: #E8DEF8;
+      --md-sys-color-on-secondary-container: #1D192B;
+      --md-sys-color-on-surface: #1C1B1F;
+      --md-sys-color-on-surface-variant: #49454F;
+      --md-sys-color-outline: #79747E;
+      --md-sys-color-outline-variant: #CAC4D0;
+      --md-sys-color-error-container: #F9DEDC;
+      --md-sys-color-on-error-container: #410E0B;
+      --md-sys-color-success: #146C2E;
+      --md-sys-color-success-container: #C4EED0;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Roboto', sans-serif;
+      background-color: var(--md-sys-color-background);
+      color: var(--md-sys-color-on-surface);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 24px;
+    }
+
+    .app-container {
+      width: 100%;
+      max-width: 680px;
+      background-color: var(--md-sys-color-surface);
+      border-radius: 28px;
+      padding: 32px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+      border: 1px solid var(--md-sys-color-outline-variant);
+    }
+
+    .header {
+      margin-bottom: 24px;
+    }
+
+    .header h1 {
+      font-size: 26px;
+      font-weight: 700;
+      color: var(--md-sys-color-on-surface);
+      letter-spacing: -0.2px;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .header p {
+      font-size: 14px;
+      color: var(--md-sys-color-on-surface-variant);
+      line-height: 1.4;
+    }
+
+    .card {
+      background-color: var(--md-sys-color-surface-container);
+      border-radius: 20px;
+      padding: 24px;
+      margin-bottom: 24px;
+      border: 1px solid #E7E0EC;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .input-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .input-group label {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--md-sys-color-on-surface);
+    }
+
+    .file-drop-area {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background-color: #FFFFFF;
+      border: 1px solid var(--md-sys-color-outline);
+      border-radius: 12px;
+      padding: 10px 14px;
+      transition: border-color 0.2s, background-color 0.2s;
+      cursor: pointer;
+    }
+
+    .file-drop-area:hover, .file-drop-area.drag-over {
+      border-color: var(--md-sys-color-primary);
+      background-color: #F8F4FF;
+    }
+
+    .file-info {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      overflow: hidden;
+    }
+
+    .file-info .material-symbols-rounded {
+      color: var(--md-sys-color-primary);
+      font-size: 22px;
+      flex-shrink: 0;
+    }
+
+    .file-name {
+      font-size: 14px;
+      color: var(--md-sys-color-on-surface-variant);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .file-name.selected {
+      color: var(--md-sys-color-on-surface);
+      font-weight: 500;
+    }
+
+    .btn-tonal {
+      background-color: var(--md-sys-color-secondary-container);
+      color: var(--md-sys-color-on-secondary-container);
+      border: none;
+      border-radius: 100px;
+      padding: 8px 16px;
+      font-size: 13px;
+      font-weight: 500;
+      font-family: inherit;
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: background-color 0.2s;
+    }
+
+    .btn-tonal:hover {
+      background-color: #D0BCFF;
+    }
+
+    input[type="file"] {
+      display: none;
+    }
+
+    .actions {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .privacy-badge {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      color: var(--md-sys-color-on-surface-variant);
+    }
+
+    .privacy-badge .material-symbols-rounded {
+      font-size: 16px;
+      color: var(--md-sys-color-success);
+    }
+
+    .btn-primary {
+      background-color: var(--md-sys-color-primary);
+      color: var(--md-sys-color-on-primary);
+      border: none;
+      border-radius: 100px;
+      padding: 12px 28px;
+      font-size: 15px;
+      font-weight: 500;
+      font-family: inherit;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 2px 6px rgba(103, 80, 164, 0.3);
+      transition: background-color 0.2s, box-shadow 0.2s, transform 0.1s;
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      background-color: #553E92;
+      box-shadow: 0 4px 10px rgba(103, 80, 164, 0.4);
+    }
+
+    .btn-primary:active:not(:disabled) {
+      transform: scale(0.98);
+    }
+
+    .btn-primary:disabled {
+      background-color: #E0E0E0;
+      color: #9E9E9E;
+      box-shadow: none;
+      cursor: not-allowed;
+    }
+
+    .progress-bar {
+      width: 100%;
+      height: 4px;
+      background-color: var(--md-sys-color-secondary-container);
+      border-radius: 4px;
+      overflow: hidden;
+      margin-bottom: 16px;
+      display: none;
+    }
+
+    .progress-bar.active {
+      display: block;
+    }
+
+    .progress-fill {
+      height: 100%;
+      width: 40%;
+      background-color: var(--md-sys-color-primary);
+      border-radius: 4px;
+      animation: indeterminate 1.4s infinite ease-in-out;
+    }
+
+    @keyframes indeterminate {
+      0% { transform: translateX(-100%); width: 40%; }
+      50% { transform: translateX(100%); width: 60%; }
+      100% { transform: translateX(250%); width: 40%; }
+    }
+
+    .status-box {
+      margin-top: 20px;
+      padding: 16px;
+      border-radius: 16px;
+      font-size: 14px;
+      line-height: 1.5;
+      display: none;
+    }
+
+    .status-box.error {
+      display: block;
+      background-color: var(--md-sys-color-error-container);
+      color: var(--md-sys-color-on-error-container);
+    }
+
+    .status-box.success {
+      display: block;
+      background-color: var(--md-sys-color-success-container);
+      color: #072711;
+    }
+
+    .status-box ul {
+      margin: 8px 0 8px 20px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="app-container">
+  <div class="header">
+    <h1>
+      <span class="material-symbols-rounded" style="font-size: 30px; color: var(--md-sys-color-primary);">analytics</span>
+      Pārdošanas atskaišu veidotājs
+    </h1>
+    <p>Grupē produktus failos pa darba lapām (sheet) un noformē drukai uz vienas A4 lapas portret režīmā.</p>
+  </div>
+
+  <div class="card">
+    <!-- 1. Ievadlogs: KODI -->
+    <div class="input-group">
+      <label for="kodsFile">1. Produktu kodu fails (KODI / KODS):</label>
+      <div class="file-drop-area" id="kodsDropArea" onclick="document.getElementById('kodsFile').click()">
+        <div class="file-info">
+          <span class="material-symbols-rounded">tag</span>
+          <span class="file-name" id="kodsFileName">Nav izvēlēts fails (velciet šeit vai spiediet pogu)</span>
+        </div>
+        <button type="button" class="btn-tonal">Izvēlēties failu</button>
+      </div>
+      <input type="file" id="kodsFile" accept=".xlsx,.xls" />
+    </div>
+
+    <!-- 2. Ievadlogs: REALIZ -->
+    <div class="input-group">
+      <label for="realizFile">2. Realizācijas datu fails (REALIZ):</label>
+      <div class="file-drop-area" id="realizDropArea" onclick="document.getElementById('realizFile').click()">
+        <div class="file-info">
+          <span class="material-symbols-rounded">table_view</span>
+          <span class="file-name" id="realizFileName">Nav izvēlēts fails (velciet šeit vai spiediet pogu)</span>
+        </div>
+        <button type="button" class="btn-tonal">Izvēlēties failu</button>
+      </div>
+      <input type="file" id="realizFile" accept=".xlsx,.xls" />
+    </div>
+  </div>
+
+  <div class="progress-bar" id="progressBar">
+    <div class="progress-fill"></div>
+  </div>
+
+  <div class="actions">
+    <div class="privacy-badge">
+      <span class="material-symbols-rounded">verified_user</span>
+      <span>100% lokāla apstrāde pārlūkā — dati netiek sūtīti uz serveri</span>
+    </div>
+
+    <button type="button" class="btn-primary" id="generateBtn" onclick="processFiles()">
+      <span class="material-symbols-rounded">download</span>
+      Ģenerēt un lejupielādēt
+    </button>
+  </div>
+
+  <div class="status-box" id="statusBox"></div>
+</div>
+
+<script>
+  function setupFileInput(inputId, dropAreaId, labelId) {
+    const input = document.getElementById(inputId);
+    const dropArea = document.getElementById(dropAreaId);
+    const label = document.getElementById(labelId);
+
+    input.addEventListener('change', () => {
+      if (input.files.length > 0) {
+        label.textContent = input.files[0].name;
+        label.classList.add('selected');
+      }
+    });
+
+    ['dragenter', 'dragover'].forEach(evt => {
+      dropArea.addEventListener(evt, (e) => {
+        e.preventDefault();
+        dropArea.classList.add('drag-over');
+      });
+    });
+
+    ['dragleave', 'drop'].forEach(evt => {
+      dropArea.addEventListener(evt, (e) => {
+        e.preventDefault();
+        dropArea.classList.remove('drag-over');
+      });
+    });
+
+    dropArea.addEventListener('drop', (e) => {
+      if (e.dataTransfer.files.length > 0) {
+        input.files = e.dataTransfer.files;
+        label.textContent = input.files[0].name;
+        label.classList.add('selected');
+      }
+    });
+  }
+
+  setupFileInput('kodsFile', 'kodsDropArea', 'kodsFileName');
+  setupFileInput('realizFile', 'realizDropArea', 'realizFileName');
+
+  async function readExcelToArrays(file) {
+    const buffer = await file.arrayBuffer();
+    const workbook = XLSX.read(buffer, { type: 'array' });
+    const sheets = {};
+    for (const sheetName of workbook.SheetNames) {
+      const sheet = workbook.Sheets[sheetName];
+      sheets[sheetName] = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' });
+    }
+    return { sheetNames: workbook.SheetNames, sheets };
+  }
+
+  function extractProductCodes(sheetsData) {
+    const ignoreWords = new Set([
+      'nan', 'none', 'kods', 'kodi', 'produkts', 'produkta kods',
+      'nosaukums', 'nr', 'nr.', 'nr. p.k.', ''
+    ]);
+    const codes = [];
+
+    for (const sheetName of sheetsData.sheetNames) {
+      const rows = sheetsData.sheets[sheetName];
+      for (const row of rows) {
+        for (const cell of row) {
+          const val = String(cell ?? '').trim();
+          if (val && !ignoreWords.has(val.toLowerCase()) && !codes.includes(val)) {
+            codes.push(val);
+          }
+        }
+      }
+    }
+    return codes;
+  }
+
+  // Vienmēr pārsauc kolonnas: A -> KLIENTS, B -> KODS, C -> NOSAUKUMS, D -> Daudzums, E -> SUMMA
+  function normalizeRealizRows(sheetsData) {
+    const firstSheetName = sheetsData.sheetNames[0];
+    const rows = sheetsData.sheets[firstSheetName];
+    if (!rows || rows.length === 0) {
+      throw new Error('Izvēlētais REALIZĀCIJAS fails ir tukšs!');
+    }
+
+    if (rows[0].length < 5) {
+      throw new Error(`REALIZĀCIJAS failā jābūt vismaz 5 kolonnām (A-E), bet atrastas tikai ${rows[0].length}.`);
+    }
+
+    const firstRowUpper = rows[0].slice(0, 5).map(v => String(v ?? '').trim().toUpperCase());
+    const dNum = Number(rows[0][3]);
+    const headerKeywords = ['KLIENTS', 'KODS', 'NOSAUKUMS', 'DAUDZUMS', 'SUMMA', 'CLIENT', 'CODE', 'QTY', 'AMOUNT'];
+    const isHeader = firstRowUpper.some(v => headerKeywords.includes(v)) || isNaN(dNum) || String(rows[0][3]).trim() === '';
+
+    const startIdx = isHeader ? 1 : 0;
+    const records = [];
+
+    for (let i = startIdx; i < rows.length; i++) {
+      const r = rows[i];
+      const klients = String(r[0] ?? '').trim();
+      const kods = String(r[1] ?? '').trim();
+      const nosaukums = String(r[2] ?? '').trim();
+      const daudzums = parseFloat(String(r[3] ?? '0').replace(',', '.')) || 0;
+      const summa = parseFloat(String(r[4] ?? '0').replace(',', '.')) || 0;
+
+      if (kods !== '') {
+        records.push({
+          KLIENTS: klients,
+          KODS: kods,
+          NOSAUKUMS: nosaukums,
+          Daudzums: daudzums,
+          SUMMA: summa
+        });
+      }
+    }
+    return records;
+  }
+
+  function parseProductInfo(rawTitle, code) {
+    const titleStr = String(rawTitle || '').trim();
+    const match = titleStr.match(/^(.*?)\s*(\d{4})[\/\-]([\d\-.]+)/);
+    if (match) {
+      const baseName = match[1].trim();
+      const year = match[2].trim();
+      const issue = match[3].trim().replace(/\.+$/, '');
+      const displayTitle = `${baseName.toUpperCase()} ${issue}/${year}`;
+      const sheetTab = issue;
+      const groupKey = `${baseName}_${year}`;
+      return { groupKey, baseName, year, issue, displayTitle, sheetTab };
+    }
+
+    const matchYear = titleStr.match(/^(.*?)\s*(\d{4})$/);
+    if (matchYear) {
+      const baseName = matchYear[1].trim();
+      const year = matchYear[2].trim();
+      return {
+        groupKey: `${baseName}_${year}`,
+        baseName,
+        year,
+        issue: code,
+        displayTitle: titleStr.toUpperCase(),
+        sheetTab: code.slice(0, 30)
+      };
+    }
+
+    return {
+      groupKey: titleStr || code,
+      baseName: titleStr || code,
+      year: '',
+      issue: code,
+      displayTitle: (titleStr || code).toUpperCase(),
+      sheetTab: code.slice(0, 30)
+    };
+  }
+
+  function buildReportSheet(ws, code, titleText, prodRows) {
+    ws.views = [{ showGridLines: true }];
+
+    let tiraza = 0;
+    let abonenti = 0;
+    let psIedotsQty = 0;
+    let psIedotsSum = 0;
+    let psAtgrieztsQty = 0;
+    let psAtgrieztsSum = 0;
+
+    for (const row of prodRows) {
+      const klientsLow = row.KLIENTS.toLowerCase();
+      if (klientsLow.includes('mūkusala') || klientsLow.includes('poligrāfijas') || klientsLow.includes('pnb print')) {
+        tiraza += row.Daudzums;
+      } else if (klientsLow.includes('latvijas pasts')) {
+        abonenti += row.Daudzums;
+      } else if (klientsLow.includes('preses serviss')) {
+        if (row.Daudzums > 0) {
+          psIedotsQty += row.Daudzums;
+          psIedotsSum += row.SUMMA;
+        } else if (row.Daudzums < 0) {
+          psAtgrieztsQty += Math.abs(row.Daudzums);
+          psAtgrieztsSum += Math.abs(row.SUMMA);
+        }
+      }
+    }
+
+    const cenaIedots = psIedotsQty > 0 ? psIedotsSum / psIedotsQty : 0;
+    const cenaAtgriezts = psAtgrieztsQty > 0 ? psAtgrieztsSum / psAtgrieztsQty : 0;
+
+    const kopaQty = psIedotsQty - psAtgrieztsQty;
+    const kopaSum = psIedotsSum - psAtgrieztsSum;
+    const kopaCena = kopaQty > 0 ? kopaSum / kopaQty : 0;
+
+    const reklamaQty = Math.max(0, tiraza - abonenti - psIedotsQty);
+    const makulaturaKopa = psAtgrieztsQty + reklamaQty;
+    const makulaturaProc = tiraza > 0 ? makulaturaKopa / tiraza : 0;
+
+    const fontTitle = { name: 'Times New Roman', size: 18, bold: true };
+    const fontRegular = { name: 'Times New Roman', size: 14, bold: false };
+    const fontArial = { name: 'Arial', size: 10, bold: false };
+
+    const alignLeft = { horizontal: 'left', vertical: 'middle' };
+    const alignRight = { horizontal: 'right', vertical: 'middle' };
+    const borderDoubleBottom = { bottom: { style: 'double', color: { argb: 'FF000000' } } };
+
+    ws.getRow(1).height = 24;
+    ws.getCell('A1').value = titleText;
+    ws.getCell('A1').font = fontTitle;
+    ws.getCell('A1').alignment = alignLeft;
+
+    ws.getCell('F1').value = code;
+    ws.getCell('F1').font = fontRegular;
+    ws.getCell('F1').alignment = alignRight;
+
+    ['A', 'B', 'C', 'D', 'E', 'F'].forEach(col => {
+      ws.getCell(`${col}1`).border = borderDoubleBottom;
+    });
+
+    ws.getCell('B3').value = 'TIRĀŽA';
+    ws.getCell('B3').font = fontRegular;
+    ws.getCell('E3').value = tiraza;
+    ws.getCell('E3').font = fontRegular;
+    ws.getCell('E3').numFmt = '#,##0';
+
+    ws.getCell('B5').value = 'ABONENTI:';
+    ws.getCell('B5').font = fontRegular;
+    ws.getCell('C5').value = 'Latvijas Pasts';
+    ws.getCell('C5').font = fontRegular;
+    ws.getCell('E5').value = abonenti;
+    ws.getCell('E5').font = fontRegular;
+    ws.getCell('E5').numFmt = '#,##0';
+
+    ws.getCell('C6').value = 'kopā:';
+    ws.getCell('C6').font = fontRegular;
+    ws.getCell('C6').alignment = alignRight;
+    ws.getCell('E6').value = abonenti;
+    ws.getCell('E6').font = fontRegular;
+    ws.getCell('E6').numFmt = '#,##0';
+
+    ws.getCell('B8').value = 'REALIZĀCIJA:';
+    ws.getCell('B8').font = fontRegular;
+    ws.getCell('C8').value = 'Preses Serviss               37%';
+    ws.getCell('C8').font = fontRegular;
+    ws.getCell('D8').value = 'iedots';
+    ws.getCell('D8').font = fontRegular;
+    ws.getCell('E8').value = psIedotsQty;
+    ws.getCell('E8').font = fontRegular;
+    ws.getCell('E8').numFmt = '#,##0';
+    ws.getCell('F8').value = psIedotsSum;
+    ws.getCell('F8').font = fontRegular;
+    ws.getCell('F8').numFmt = '#,##0.00 €';
+    ws.getCell('H8').value = cenaIedots;
+    ws.getCell('H8').font = fontArial;
+    ws.getCell('H8').numFmt = '#,##0.00 €';
+
+    ws.getCell('D9').value = 'atgriezts';
+    ws.getCell('D9').font = fontRegular;
+    ws.getCell('E9').value = psAtgrieztsQty;
+    ws.getCell('E9').font = fontRegular;
+    ws.getCell('E9').numFmt = '#,##0';
+    ws.getCell('F9').value = psAtgrieztsSum;
+    ws.getCell('F9').font = fontRegular;
+    ws.getCell('F9').numFmt = '#,##0.00 €';
+    ws.getCell('H9').value = cenaAtgriezts;
+    ws.getCell('H9').font = fontArial;
+    ws.getCell('H9').numFmt = '#,##0.00 €';
+
+    ws.getCell('C10').value = 'kopā:';
+    ws.getCell('C10').font = fontRegular;
+    ws.getCell('C10').alignment = alignRight;
+    ws.getCell('E10').value = kopaQty;
+    ws.getCell('E10').font = fontRegular;
+    ws.getCell('E10').numFmt = '#,##0';
+    ws.getCell('F10').value = kopaSum;
+    ws.getCell('F10').font = fontRegular;
+    ws.getCell('F10').numFmt = '#,##0.00 €';
+    ws.getCell('H10').value = kopaCena;
+    ws.getCell('H10').font = fontArial;
+    ws.getCell('H10').numFmt = '#,##0.00 €';
+
+    ws.getCell('B12').value = 'MAKULATŪRA';
+    ws.getCell('B12').font = fontRegular;
+    ws.getCell('C12').value = 'Preses Serviss';
+    ws.getCell('C12').font = fontRegular;
+    ws.getCell('E12').value = psAtgrieztsQty;
+    ws.getCell('E12').font = fontRegular;
+    ws.getCell('E12').numFmt = '#,##0';
+
+    ws.getCell('C13').value = 'Noliktavā';
+    ws.getCell('C13').font = fontRegular;
+    ws.getCell('E13').value = 0;
+    ws.getCell('E13').font = fontRegular;
+    ws.getCell('E13').numFmt = '#,##0';
+
+    ws.getCell('C14').value = 'Reklāma';
+    ws.getCell('C14').font = fontRegular;
+    ws.getCell('E14').value = reklamaQty;
+    ws.getCell('E14').font = fontRegular;
+    ws.getCell('E14').numFmt = '#,##0';
+
+    ws.getCell('C15').value = 'Starpība';
+    ws.getCell('C15').font = fontRegular;
+    ws.getCell('E15').value = 0;
+    ws.getCell('E15').font = fontRegular;
+    ws.getCell('E15').numFmt = '#,##0';
+
+    ws.getCell('C16').value = 'kopā:';
+    ws.getCell('C16').font = fontRegular;
+    ws.getCell('C16').alignment = alignRight;
+    ws.getCell('E16').value = makulaturaKopa;
+    ws.getCell('E16').font = fontRegular;
+    ws.getCell('E16').numFmt = '#,##0';
+
+    ws.getCell('B19').value = 'Makulatūra procentos';
+    ws.getCell('B19').font = fontRegular;
+    ws.getCell('E19').value = makulaturaProc;
+    ws.getCell('E19').font = fontRegular;
+    ws.getCell('E19').numFmt = '0.0%';
+
+    ws.getCell('B21').value = 'Pārdošanas nodaļas vadītājs';
+    ws.getCell('B21').font = fontRegular;
+    ws.getCell('F21').value = 'Jānis Mežsargs';
+    ws.getCell('F21').font = fontRegular;
+    ws.getCell('F21').alignment = alignRight;
+
+    ws.columns = [
+      { key: 'A', width: 4 },
+      { key: 'B', width: 28 },
+      { key: 'C', width: 36 },
+      { key: 'D', width: 12 },
+      { key: 'E', width: 12 },
+      { key: 'F', width: 22 },
+      { key: 'G', width: 4 },
+      { key: 'H', width: 12 }
+    ];
+
+    ws.pageSetup = {
+      orientation: 'portrait',
+      paperSize: 9,
+      fitToPage: true,
+      fitToWidth: 1,
+      fitToHeight: 1,
+      horizontalCentered: true,
+      printArea: 'A1:H22',
+      margins: {
+        left: 0.4,
+        right: 0.4,
+        top: 0.5,
+        bottom: 0.5,
+        header: 0.2,
+        footer: 0.2
+      }
+    };
+  }
+
+  async function processFiles() {
+    const kodsInput = document.getElementById('kodsFile');
+    const realizInput = document.getElementById('realizFile');
+    const statusBox = document.getElementById('statusBox');
+    const progressBar = document.getElementById('progressBar');
+    const generateBtn = document.getElementById('generateBtn');
+
+    statusBox.className = 'status-box';
+    statusBox.innerHTML = '';
+
+    if (!kodsInput.files.length) {
+      showError('Lūdzu izvēlieties 1. failu (KODI / KODS)!', statusBox);
+      return;
+    }
+    if (!realizInput.files.length) {
+      showError('Lūdzu izvēlieties 2. failu (REALIZ)!', statusBox);
+      return;
+    }
+
+    const kodsFile = kodsInput.files[0];
+    const realizFile = realizInput.files[0];
+
+    if (kodsFile.name === realizFile.name && kodsFile.size === realizFile.size) {
+      showError('1. un 2. ievadlogā ir izvēlēts viens un tas pats fails! Lūdzu norādiet atsevišķus KODI un REALIZ failus.', statusBox);
+      return;
+    }
+
+    generateBtn.disabled = true;
+    progressBar.classList.add('active');
+
+    try {
+      const kodsData = await readExcelToArrays(kodsFile);
+      const codes = extractProductCodes(kodsData);
+
+      if (codes.length === 0) {
+        throw new Error('KODI failā netika atrasts neviens derīgs produkta kods!');
+      }
+
+      const realizData = await readExcelToArrays(realizFile);
+      const realizRecords = normalizeRealizRows(realizData);
+
+      const groups = {};
+      const skipped = [];
+
+      for (const code of codes) {
+        const prodRows = realizRecords.filter(r => r.KODS === code);
+        if (prodRows.length === 0) {
+          skipped.push(code);
+          continue;
+        }
+
+        const rawTitle = prodRows[0].NOSAUKUMS || code;
+        const info = parseProductInfo(rawTitle, code);
+
+        if (!groups[info.groupKey]) {
+          groups[info.groupKey] = {
+            baseName: info.baseName,
+            year: info.year,
+            items: []
+          };
+        }
+
+        groups[info.groupKey].items.push({
+          code,
+          issue: info.issue,
+          displayTitle: info.displayTitle,
+          sheetTab: info.sheetTab,
+          prodRows
+        });
+      }
+
+      const groupKeys = Object.keys(groups);
+      if (groupKeys.length === 0) {
+        throw new Error(`Neviens no KODI failā esošajiem kodiem (${codes.length} gab.) netika atrasts REALIZ failā!`);
+      }
+
+      const generatedFiles = [];
+
+      for (const gKey of groupKeys) {
+        const gData = groups[gKey];
+        const wb = new ExcelJS.Workbook();
+
+        const cleanName = gData.baseName.replace(/[^\p{L}\p{N}_]/gu, '') || 'Atskaite';
+        const issuesStr = gData.items.map(it => String(it.sheetTab).replace(/\//g, '-')).join('_');
+        const filename = gData.year
+          ? `${cleanName}_${gData.year}_${issuesStr}.xlsx`
+          : `${cleanName}_${issuesStr}.xlsx`;
+
+        const usedTabNames = new Set();
+        for (const item of gData.items) {
+          let tabName = String(item.sheetTab).slice(0, 31);
+          let counter = 1;
+          const baseTab = tabName;
+          while (usedTabNames.has(tabName)) {
+            tabName = `${baseTab.slice(0, 28)}_${counter}`;
+            counter++;
+          }
+          usedTabNames.add(tabName);
+
+          const ws = wb.addWorksheet(tabName);
+          buildReportSheet(ws, item.code, item.displayTitle, item.prodRows);
+        }
+
+        const buffer = await wb.xlsx.writeBuffer();
+        generatedFiles.push({ filename, buffer });
+      }
+
+      if (generatedFiles.length === 1) {
+        triggerDownload(
+          new Blob([generatedFiles[0].buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }),
+          generatedFiles[0].filename
+        );
+      } else {
+        const zip = new JSZip();
+        for (const f of generatedFiles) {
+          zip.file(f.filename, f.buffer);
+        }
+        const zipBlob = await zip.generateAsync({ type: 'blob' });
+        const today = new Date().toISOString().slice(0, 10);
+        triggerDownload(zipBlob, `Pardosanas_atskaites_${today}.zip`);
+      }
+
+      let htmlMsg = `<strong>Pabeigts!</strong> Veiksmīgi uzģenerēti <strong>${generatedFiles.length}</strong> Excel faili (noformēti 1 A4 lapai):<ul>`;
+      for (const f of generatedFiles) {
+        htmlMsg += `<li>${f.filename}</li>`;
+      }
+      htmlMsg += `</ul>`;
+
+      if (skipped.length > 0) {
+        htmlMsg += `<p style="margin-top:8px; font-size:13px;"><strong>Netika atrasti dati šādiem kodiem (${skipped.length}):</strong> ${skipped.join(', ')}</p>`;
+      }
+
+      statusBox.className = 'status-box success';
+      statusBox.innerHTML = htmlMsg;
+
+    } catch (err) {
+      showError(err.message || String(err), statusBox);
+    } finally {
+      generateBtn.disabled = false;
+      progressBar.classList.remove('active');
+    }
+  }
+
+  function showError(msg, box) {
+    box.className = 'status-box error';
+    box.innerHTML = `<strong>Kļūda:</strong> ${msg}`;
+  }
+
+  function triggerDownload(blob, filename) {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 5000);
+  }
+</script>
+
+</body>
+</html>
