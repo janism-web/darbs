@@ -120,7 +120,21 @@
       <div class="m3-card-filled">
         <div>
           <label class="m3-field-label" for="ligumaNr">1. LĪGUMA NUMURS (ZEM PIRCĒJA ADRESES)</label>
-          <input type="text" class="m3-outlined-input" id="ligumaNr" value="Līgums LIG/2025/266" placeholder="Piem., Līgums LIG/2025/266" />
+          <div class="m3-segmented-group" role="group" aria-label="Līguma veids" style="margin-bottom: 12px;">
+            <button type="button" class="m3-segment-btn active" id="btnLigRS" onclick="selectContractPreset('rs')">
+              <span class="material-symbols-rounded m3-segment-check">check</span>
+              <span>RS</span>
+            </button>
+            <button type="button" class="m3-segment-btn" id="btnLigCTD" onclick="selectContractPreset('ctd')">
+              <span class="material-symbols-rounded m3-segment-check">check</span>
+              <span>CTD</span>
+            </button>
+            <button type="button" class="m3-segment-btn" id="btnLigCits" onclick="selectContractPreset('cits')">
+              <span class="material-symbols-rounded m3-segment-check">check</span>
+              <span>Cits</span>
+            </button>
+          </div>
+          <input type="text" class="m3-outlined-input" id="ligumaNr" value="Līgums LIG/2025/266" placeholder="Ievadiet līguma numuru..." oninput="syncPresetOnManualInput()" />
         </div>
 
         <div>
@@ -194,6 +208,35 @@
     const progressWrap = document.getElementById("progressWrap");
     const progressBar = document.getElementById("progressBar");
     const ligumaInput = document.getElementById("ligumaNr");
+
+    const CONTRACT_PRESETS = {
+      rs: "Līgums LIG/2025/266",
+      ctd: "Līgums Nr.2.12-09/428"
+    };
+
+    function selectContractPreset(type) {
+      const inp = document.getElementById("ligumaNr");
+      document.getElementById("btnLigRS").classList.toggle("active", type === "rs");
+      document.getElementById("btnLigCTD").classList.toggle("active", type === "ctd");
+      document.getElementById("btnLigCits").classList.toggle("active", type === "cits");
+
+      if (type === "rs") {
+        inp.value = CONTRACT_PRESETS.rs;
+      } else if (type === "ctd") {
+        inp.value = CONTRACT_PRESETS.ctd;
+      } else {
+        inp.value = "";
+        inp.focus();
+      }
+    }
+
+    function syncPresetOnManualInput() {
+      const val = document.getElementById("ligumaNr").value.trim();
+      document.getElementById("btnLigRS").classList.toggle("active", val === CONTRACT_PRESETS.rs);
+      document.getElementById("btnLigCTD").classList.toggle("active", val === CONTRACT_PRESETS.ctd);
+      document.getElementById("btnLigCits").classList.toggle("active", val !== CONTRACT_PRESETS.rs && val !== CONTRACT_PRESETS.ctd);
+    }
+
 
     let selectedFiles = [];
 
@@ -579,10 +622,13 @@
 
           if (kopsavilkums.length > 0) {
             const summaY = currentY + 38.97;
+            // Izlīdzina kopsavilkuma bloku ("Summa:", "PVN:", "Summa apmaksai:") pa kreisi atbilstoši platākajai rindai ("Summa apmaksai:")
+            const minSummaX = Math.min(...kopsavilkums.map(r => r.x));
             kopsavilkums.forEach((sRinda, idxS) => {
               const rindaY = summaY + idxS * 13.83;
+              const shiftX = minSummaX - sRinda.x;
               for (const sp of sRinda.spans) {
-                drawTextTopDown(sp.text, sp.x, rindaY, 9.0, sp.isBold);
+                drawTextTopDown(sp.text, sp.x + shiftX, rindaY, 9.0, sp.isBold);
               }
             });
             currentY = summaY + (kopsavilkums.length - 1) * 13.83;
