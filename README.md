@@ -1,11 +1,7 @@
-# Preču pārdošanas atskaišu veidotājs
+# Darba rīku portāls — Google Material Design 3
 
-Tīmekļa lietotne, kas izveido strukturētas Excel atskaites atbilstoši produkta kodiem (`KODI`) un realizācijas datiem (`REALIZ`).
-
-## Galvenās funkcijas
-1. **Atskaišu ģenerēšana:**
-   - Automātiski pārsauc `REALIZ` kolonnas `A–E` uz `KLIENTS`, `KODS`, `NOSAUKUMS`, `Daudzums`, `SUMMA`.
-   - Grupē viena produkta dažādos numurus vienā `.xlsx` failā katru savā darba lapā (*sheet*).
-   - Noformē katru lapu drukai uz **1 A4 lapas portret (*Portrait*) režīmā**.
-2. **Masveida izdruka (`2. Masveida izdruka` cilne):**
-   - Ļauj izvēlēties vairākus `.xlsx` / `.xls` failus vienlaikus un nosūtīt pilnīgi visus to *sheet*-us uz printeri ar vienu klikšķi.
+Visas lapas ir pārveidotas vienotā **Google Material Design 3 (M3)** dizaina sistēmā:
+- **`m3-theme.css`:** Kopējie Material 3 krāsu mainīgie, virsmu hierarhija (`surface-container-low`, `surface-container`, `surface-container-high`), M3 Top App Bar, Segmented Buttons, Outlined Dropzones, Filled/Tonal pogas un Gaišā/Tumšā režīma atbalsts.
+- **`index.html`:** Portāla sākumlapa ar navigācijas kartītēm.
+- **`atskaites.html`:** Pilnais pārdošanas atskaišu veidotājs un masveida A4 izdrukas modulis.
+- **`rekini.html`:** Rēķinu formas labošanas lapa tajā pašā M3 dizainā.

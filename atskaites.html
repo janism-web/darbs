@@ -3,347 +3,55 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Pārdošanas atskaišu veidotājs</title>
-  <!-- Google Fonts: Roboto, Times New Roman & Material Symbols -->
+  <title>Pārdošanas atskaišu veidotājs — Material 3</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet" />
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet" />
 
-  <!-- ExcelJS, JSZip & SheetJS -->
   <script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
+  <link rel="stylesheet" href="m3-theme.css" />
+  <script>
+  (function initTheme() {
+    const saved = localStorage.getItem('m3-theme');
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    const theme = saved || (prefersDark ? 'dark' : 'light');
+    document.documentElement.setAttribute('data-theme', theme);
+  })();
+
+  function toggleM3Theme() {
+    const current = document.documentElement.getAttribute('data-theme') || 'light';
+    const next = current === 'light' ? 'dark' : 'light';
+    document.documentElement.setAttribute('data-theme', next);
+    localStorage.setItem('m3-theme', next);
+    const icon = document.getElementById('themeIcon');
+    if (icon) icon.textContent = next === 'dark' ? 'light_mode' : 'dark_mode';
+  }
+
+  window.addEventListener('DOMContentLoaded', () => {
+    const current = document.documentElement.getAttribute('data-theme') || 'light';
+    const icon = document.getElementById('themeIcon');
+    if (icon) icon.textContent = current === 'dark' ? 'light_mode' : 'dark_mode';
+  });
+</script>
   <style>
-    :root {
-      --md-sys-color-background: #FDF8FD;
-      --md-sys-color-surface: #FDF8FD;
-      --md-sys-color-surface-container: #F3EDF7;
-      --md-sys-color-primary: #6750A4;
-      --md-sys-color-on-primary: #FFFFFF;
-      --md-sys-color-secondary-container: #E8DEF8;
-      --md-sys-color-on-secondary-container: #1D192B;
-      --md-sys-color-on-surface: #1C1B1F;
-      --md-sys-color-on-surface-variant: #49454F;
-      --md-sys-color-outline: #79747E;
-      --md-sys-color-outline-variant: #CAC4D0;
-      --md-sys-color-error-container: #F9DEDC;
-      --md-sys-color-on-error-container: #410E0B;
-      --md-sys-color-success: #146C2E;
-      --md-sys-color-success-container: #C4EED0;
-    }
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+    input[type="file"] { display: none; }
 
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-
-    body {
-      font-family: 'Roboto', sans-serif;
-      background-color: var(--md-sys-color-background);
-      color: var(--md-sys-color-on-surface);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
-      padding: 24px;
-    }
-
-    .app-container {
-      width: 100%;
-      max-width: 720px;
-      background-color: var(--md-sys-color-surface);
-      border-radius: 28px;
-      padding: 32px;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
-      border: 1px solid var(--md-sys-color-outline-variant);
-    }
-
-    .header {
-      margin-bottom: 20px;
-    }
-
-    .header h1 {
-      font-size: 26px;
-      font-weight: 700;
-      color: var(--md-sys-color-on-surface);
-      letter-spacing: -0.2px;
-      margin-bottom: 6px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .header p {
-      font-size: 14px;
-      color: var(--md-sys-color-on-surface-variant);
-      line-height: 1.4;
-    }
-
-    /* Material 3 Segmented Tabs */
-    .tabs-bar {
-      display: flex;
-      background-color: var(--md-sys-color-surface-container);
-      padding: 4px;
-      border-radius: 100px;
-      margin-bottom: 24px;
-      border: 1px solid #E7E0EC;
-    }
-
-    .tab-btn {
-      flex: 1;
-      border: none;
-      background: transparent;
-      padding: 10px 16px;
-      border-radius: 100px;
-      font-family: inherit;
-      font-size: 14px;
-      font-weight: 500;
-      color: var(--md-sys-color-on-surface-variant);
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      transition: background-color 0.2s, color 0.2s, box-shadow 0.2s;
-    }
-
-    .tab-btn.active {
-      background-color: var(--md-sys-color-primary);
-      color: var(--md-sys-color-on-primary);
-      box-shadow: 0 2px 6px rgba(103, 80, 164, 0.25);
-    }
-
-    .tab-panel {
-      display: none;
-    }
-
-    .tab-panel.active {
-      display: block;
-    }
-
-    .card {
-      background-color: var(--md-sys-color-surface-container);
-      border-radius: 20px;
-      padding: 24px;
-      margin-bottom: 24px;
-      border: 1px solid #E7E0EC;
-      display: flex;
-      flex-direction: column;
-      gap: 20px;
-    }
-
-    .input-group {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-
-    .input-group label {
-      font-size: 13px;
-      font-weight: 500;
-      color: var(--md-sys-color-on-surface);
-    }
-
-    .file-drop-area {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      background-color: #FFFFFF;
-      border: 1px solid var(--md-sys-color-outline);
-      border-radius: 12px;
-      padding: 10px 14px;
-      transition: border-color 0.2s, background-color 0.2s;
-      cursor: pointer;
-    }
-
-    .file-drop-area:hover, .file-drop-area.drag-over {
-      border-color: var(--md-sys-color-primary);
-      background-color: #F8F4FF;
-    }
-
-    .file-info {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      overflow: hidden;
-    }
-
-    .file-info .material-symbols-rounded {
-      color: var(--md-sys-color-primary);
-      font-size: 22px;
-      flex-shrink: 0;
-    }
-
-    .file-name {
-      font-size: 14px;
-      color: var(--md-sys-color-on-surface-variant);
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    .file-name.selected {
-      color: var(--md-sys-color-on-surface);
-      font-weight: 500;
-    }
-
-    .btn-tonal {
-      background-color: var(--md-sys-color-secondary-container);
-      color: var(--md-sys-color-on-secondary-container);
-      border: none;
-      border-radius: 100px;
-      padding: 8px 16px;
-      font-size: 13px;
-      font-weight: 500;
-      font-family: inherit;
-      cursor: pointer;
-      flex-shrink: 0;
-      transition: background-color 0.2s;
-    }
-
-    .btn-tonal:hover {
-      background-color: #D0BCFF;
-    }
-
-    input[type="file"] {
-      display: none;
-    }
-
-    .actions {
+    .m3-actions-row {
       display: flex;
       justify-content: space-between;
       align-items: center;
       gap: 16px;
       flex-wrap: wrap;
-    }
-
-    .privacy-badge {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 12px;
-      color: var(--md-sys-color-on-surface-variant);
-    }
-
-    .privacy-badge .material-symbols-rounded {
-      font-size: 16px;
-      color: var(--md-sys-color-success);
-    }
-
-    .btn-primary {
-      background-color: var(--md-sys-color-primary);
-      color: var(--md-sys-color-on-primary);
-      border: none;
-      border-radius: 100px;
-      padding: 12px 28px;
-      font-size: 15px;
-      font-weight: 500;
-      font-family: inherit;
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      box-shadow: 0 2px 6px rgba(103, 80, 164, 0.3);
-      transition: background-color 0.2s, box-shadow 0.2s, transform 0.1s;
-    }
-
-    .btn-primary:hover:not(:disabled) {
-      background-color: #553E92;
-      box-shadow: 0 4px 10px rgba(103, 80, 164, 0.4);
-    }
-
-    .btn-primary:active:not(:disabled) {
-      transform: scale(0.98);
-    }
-
-    .btn-primary:disabled {
-      background-color: #E0E0E0;
-      color: #9E9E9E;
-      box-shadow: none;
-      cursor: not-allowed;
-    }
-
-    .progress-bar {
-      width: 100%;
-      height: 4px;
-      background-color: var(--md-sys-color-secondary-container);
-      border-radius: 4px;
-      overflow: hidden;
-      margin-bottom: 16px;
-      display: none;
-    }
-
-    .progress-bar.active {
-      display: block;
-    }
-
-    .progress-fill {
-      height: 100%;
-      width: 40%;
-      background-color: var(--md-sys-color-primary);
-      border-radius: 4px;
-      animation: indeterminate 1.4s infinite ease-in-out;
-    }
-
-    @keyframes indeterminate {
-      0% { transform: translateX(-100%); width: 40%; }
-      50% { transform: translateX(100%); width: 60%; }
-      100% { transform: translateX(250%); width: 40%; }
-    }
-
-    .status-box {
-      margin-top: 20px;
-      padding: 16px;
-      border-radius: 16px;
-      font-size: 14px;
-      line-height: 1.5;
-      display: none;
-    }
-
-    .status-box.error {
-      display: block;
-      background-color: var(--md-sys-color-error-container);
-      color: var(--md-sys-color-on-error-container);
-    }
-
-    .status-box.success {
-      display: block;
-      background-color: var(--md-sys-color-success-container);
-      color: #072711;
-    }
-
-    .status-box ul {
-      margin: 8px 0 8px 20px;
-    }
-
-    .selected-files-list {
-      list-style: none;
       margin-top: 8px;
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
     }
 
-    .selected-files-list li {
-      background: #FFFFFF;
-      border: 1px solid var(--md-sys-color-outline-variant);
-      border-radius: 8px;
-      padding: 6px 12px;
-      font-size: 13px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-
-    /* =====================================================================
-       DRUKAS STILI (@media print) — Katrs sheet uz savas A4 Portrait lapas
-       ===================================================================== */
-    #printMount {
-      display: none;
-    }
+    #printMount { display: none; }
 
     @media print {
       @page {
@@ -353,12 +61,14 @@
 
       body {
         background: #FFFFFF !important;
+        color: #000000 !important;
         padding: 0 !important;
         margin: 0 !important;
         display: block !important;
       }
 
-      .app-container {
+      .m3-top-app-bar,
+      .m3-main-wrapper {
         display: none !important;
       }
 
@@ -417,13 +127,8 @@
         text-align: right;
       }
 
-      .num-cell {
-        text-align: right;
-      }
-
-      .label-right {
-        text-align: right;
-      }
+      .num-cell { text-align: right; }
+      .label-right { text-align: right; }
 
       .price-cell {
         font-family: Arial, sans-serif;
@@ -435,111 +140,121 @@
 </head>
 <body>
 
-<div class="app-container">
-  <div class="header">
-    <h1>
-      <span class="material-symbols-rounded" style="font-size: 30px; color: var(--md-sys-color-primary);">analytics</span>
-      Pārdošanas atskaišu veidotājs
-    </h1>
-    <p>Ģenerējiet apvienotās Excel atskaites vai nosūtiet gatavos failus uz masveida izdruku (visi sheet-i).</p>
-  </div>
-
-  <!-- Cilnes: 1. Ģenerēt atskaites | 2. Drukāt failus -->
-  <div class="tabs-bar">
-    <button type="button" class="tab-btn active" id="tabGenBtn" onclick="switchTab('gen')">
-      <span class="material-symbols-rounded" style="font-size: 18px;">table_chart</span>
-      1. Ģenerēt atskaites
+  <header class="m3-top-app-bar">
+    <div class="m3-top-bar-left">
+      <a href="index.html" class="m3-icon-btn" title="Atpakaļ uz rīku izvēlni" aria-label="Atpakaļ">
+        <span class="material-symbols-rounded">arrow_back</span>
+      </a>
+      <div class="m3-top-bar-title">
+        <span class="material-symbols-rounded" style="color: var(--md-sys-color-primary);">analytics</span>
+        <span>Pārdošanas atskaites</span>
+      </div>
+    </div>
+    <button type="button" class="m3-icon-btn" onclick="toggleM3Theme()" title="Pārslēgt gaišo / tumšo režīmu" aria-label="Pārslēgt motīvu">
+      <span class="material-symbols-rounded" id="themeIcon">dark_mode</span>
     </button>
-    <button type="button" class="tab-btn" id="tabPrintBtn" onclick="switchTab('print')">
-      <span class="material-symbols-rounded" style="font-size: 18px;">print</span>
-      2. Masveida izdruka (visi sheet-i)
-    </button>
-  </div>
+  </header>
 
-  <!-- PANELIS 1: ATSKAIŠU ĢENERĒŠANA -->
-  <div class="tab-panel active" id="panelGen">
-    <div class="card">
-      <div class="input-group">
-        <label for="kodsFile">1. Produktu kodu fails (KODI / KODS):</label>
-        <div class="file-drop-area" id="kodsDropArea" onclick="document.getElementById('kodsFile').click()">
-          <div class="file-info">
-            <span class="material-symbols-rounded">tag</span>
-            <span class="file-name" id="kodsFileName">Nav izvēlēts fails (velciet šeit vai spiediet pogu)</span>
+  <main class="m3-main-wrapper">
+    <div class="m3-surface-sheet">
+      <div class="m3-headline-group">
+        <h1 class="m3-headline-medium">Pārdošanas atskaišu veidotājs</h1>
+        <p class="m3-body-medium">Ģenerējiet apvienotās Excel atskaites pa darba lapām (sheet) vai nosūtiet gatavos failus uz masveida A4 izdruku.</p>
+      </div>
+
+      <div class="m3-segmented-group" role="tablist">
+        <button type="button" class="m3-segment-btn active" id="tabGenBtn" onclick="switchTab('gen')">
+          <span class="material-symbols-rounded" style="font-size: 18px;">table_chart</span>
+          <span>1. Ģenerēt atskaites</span>
+        </button>
+        <button type="button" class="m3-segment-btn" id="tabPrintBtn" onclick="switchTab('print')">
+          <span class="material-symbols-rounded" style="font-size: 18px;">print</span>
+          <span>2. Masveida izdruka (visi sheet-i)</span>
+        </button>
+      </div>
+
+      <div class="tab-panel active" id="panelGen">
+        <div class="m3-card-filled">
+          <div>
+            <label class="m3-field-label" for="kodsFile">1. PRODUKTU KODU FAILS (KODI / KODS)</label>
+            <div class="m3-dropzone" id="kodsDropArea" onclick="document.getElementById('kodsFile').click()">
+              <div class="m3-dropzone-info">
+                <span class="material-symbols-rounded m3-dropzone-icon">tag</span>
+                <span class="m3-file-name" id="kodsFileName">Nav izvēlēts fails (ievelciet šeit vai spiediet pogu)</span>
+              </div>
+              <button type="button" class="m3-btn-tonal">Izvēlēties failu</button>
+            </div>
+            <input type="file" id="kodsFile" accept=".xlsx,.xls" />
           </div>
-          <button type="button" class="btn-tonal">Izvēlēties failu</button>
-        </div>
-        <input type="file" id="kodsFile" accept=".xlsx,.xls" />
-      </div>
 
-      <div class="input-group">
-        <label for="realizFile">2. Realizācijas datu fails (REALIZ):</label>
-        <div class="file-drop-area" id="realizDropArea" onclick="document.getElementById('realizFile').click()">
-          <div class="file-info">
-            <span class="material-symbols-rounded">table_view</span>
-            <span class="file-name" id="realizFileName">Nav izvēlēts fails (velciet šeit vai spiediet pogu)</span>
+          <div>
+            <label class="m3-field-label" for="realizFile">2. REALIZĀCIJAS DATU FAILS (REALIZ)</label>
+            <div class="m3-dropzone" id="realizDropArea" onclick="document.getElementById('realizFile').click()">
+              <div class="m3-dropzone-info">
+                <span class="material-symbols-rounded m3-dropzone-icon">table_view</span>
+                <span class="m3-file-name" id="realizFileName">Nav izvēlēts fails (ievelciet šeit vai spiediet pogu)</span>
+              </div>
+              <button type="button" class="m3-btn-tonal">Izvēlēties failu</button>
+            </div>
+            <input type="file" id="realizFile" accept=".xlsx,.xls" />
           </div>
-          <button type="button" class="btn-tonal">Izvēlēties failu</button>
         </div>
-        <input type="file" id="realizFile" accept=".xlsx,.xls" />
-      </div>
-    </div>
 
-    <div class="progress-bar" id="progressBar">
-      <div class="progress-fill"></div>
-    </div>
+        <div class="m3-linear-progress" id="progressBar">
+          <div class="m3-linear-progress-bar"></div>
+        </div>
 
-    <div class="actions">
-      <div class="privacy-badge">
-        <span class="material-symbols-rounded">verified_user</span>
-        <span>100% lokāla apstrāde pārlūkā</span>
-      </div>
-
-      <button type="button" class="btn-primary" id="generateBtn" onclick="processFiles()">
-        <span class="material-symbols-rounded">download</span>
-        Ģenerēt un lejupielādēt
-      </button>
-    </div>
-
-    <div class="status-box" id="statusBox"></div>
-  </div>
-
-  <!-- PANELIS 2: MASVEIDA IZDRUKA UZ PRINTERI -->
-  <div class="tab-panel" id="panelPrint">
-    <div class="card">
-      <div class="input-group">
-        <label for="printFilesInput">Izvēlieties vienu vai vairākus .xlsx / .xls atskaišu failus drukāšanai:</label>
-        <div class="file-drop-area" id="printDropArea" onclick="document.getElementById('printFilesInput').click()">
-          <div class="file-info">
-            <span class="material-symbols-rounded">folder_open</span>
-            <span class="file-name" id="printFilesLabel">Nav izvēlēti faili (varat iezīmēt vairākus failus vienlaikus)</span>
+        <div class="m3-actions-row">
+          <div class="m3-chip">
+            <span class="material-symbols-rounded">verified_user</span>
+            <span>Dati paliek tikai jūsu datorā</span>
           </div>
-          <button type="button" class="btn-tonal">Izvēlēties failus</button>
+
+          <button type="button" class="m3-btn-filled" id="generateBtn" onclick="processFiles()">
+            <span class="material-symbols-rounded" style="font-size: 20px;">download</span>
+            <span>Ģenerēt un lejupielādēt</span>
+          </button>
         </div>
-        <input type="file" id="printFilesInput" accept=".xlsx,.xls" multiple />
-        <ul class="selected-files-list" id="selectedPrintList"></ul>
-      </div>
-    </div>
 
-    <div class="actions">
-      <div class="privacy-badge">
-        <span class="material-symbols-rounded">print</span>
-        <span>Katra darba lapa (sheet) tiks izdrukāta uz atsevišķas A4 lapas</span>
+        <div class="m3-banner" id="statusBox"></div>
       </div>
 
-      <button type="button" class="btn-primary" id="printAllBtn" onclick="printSelectedWorkbooks()">
-        <span class="material-symbols-rounded">print</span>
-        Drukāt visus sheet-us
-      </button>
+      <div class="tab-panel" id="panelPrint">
+        <div class="m3-card-filled">
+          <div>
+            <label class="m3-field-label" for="printFilesInput">IZVĒLIETIES VIENU VAI VAIRĀKUS .XLSX / .XLS FAILUS DRUKĀŠANAI</label>
+            <div class="m3-dropzone" id="printDropArea" onclick="document.getElementById('printFilesInput').click()">
+              <div class="m3-dropzone-info">
+                <span class="material-symbols-rounded m3-dropzone-icon">folder_open</span>
+                <span class="m3-file-name" id="printFilesLabel">Nav izvēlēti faili (varat iezīmēt vairākus failus vienlaikus)</span>
+              </div>
+              <button type="button" class="m3-btn-tonal">Izvēlēties failus</button>
+            </div>
+            <input type="file" id="printFilesInput" accept=".xlsx,.xls" multiple />
+            <ul class="m3-file-list" id="selectedPrintList"></ul>
+          </div>
+        </div>
+
+        <div class="m3-actions-row">
+          <div class="m3-chip">
+            <span class="material-symbols-rounded">description</span>
+            <span>Katrs sheet = 1 A4 Portrait lapa</span>
+          </div>
+
+          <button type="button" class="m3-btn-filled" id="printAllBtn" onclick="printSelectedWorkbooks()">
+            <span class="material-symbols-rounded" style="font-size: 20px;">print</span>
+            <span>Drukāt visus sheet-us</span>
+          </button>
+        </div>
+
+        <div class="m3-banner" id="printStatusBox"></div>
+      </div>
     </div>
+  </main>
 
-    <div class="status-box" id="printStatusBox"></div>
-  </div>
-</div>
+  <div id="printMount"></div>
 
-<!-- Slēptais konteiners, kurā tiek ielādētas visas lapas drukai -->
-<div id="printMount"></div>
-
-<script>
+  <script>
   // Ciļņu pārslēgšana
   function switchTab(tabName) {
     document.getElementById('tabGenBtn').classList.toggle('active', tabName === 'gen');
@@ -648,7 +363,7 @@
   async function printSelectedWorkbooks() {
     const statusBox = document.getElementById('printStatusBox');
     const printMount = document.getElementById('printMount');
-    statusBox.className = 'status-box';
+    statusBox.className = 'm3-banner';
     statusBox.innerHTML = '';
     printMount.innerHTML = '';
 
@@ -724,7 +439,7 @@
         return;
       }
 
-      statusBox.className = 'status-box success';
+      statusBox.className = 'm3-banner success';
       statusBox.innerHTML = `<strong>Sagatavots drukai!</strong> Kopā <strong>${totalSheetsCount}</strong> darba lapas (sheet) no <strong>${printInput.files.length}</strong> failiem. Atveras drukas logs...`;
 
       // Neliela aizture, lai pārlūks paspēj uzzīmēt tabulas pirms drukas dialoga atvēršanas
@@ -1052,7 +767,7 @@
     const progressBar = document.getElementById('progressBar');
     const generateBtn = document.getElementById('generateBtn');
 
-    statusBox.className = 'status-box';
+    statusBox.className = 'm3-banner';
     statusBox.innerHTML = '';
 
     if (!kodsInput.files.length) {
@@ -1177,7 +892,7 @@
         htmlMsg += `<p style="margin-top:8px; font-size:13px;"><strong>Netika atrasti dati šādiem kodiem (${skipped.length}):</strong> ${skipped.join(', ')}</p>`;
       }
 
-      statusBox.className = 'status-box success';
+      statusBox.className = 'm3-banner success';
       statusBox.innerHTML = htmlMsg;
 
     } catch (err) {
@@ -1189,7 +904,7 @@
   }
 
   function showError(msg, box) {
-    box.className = 'status-box error';
+    box.className = 'm3-banner error';
     box.innerHTML = `<strong>Kļūda:</strong> ${msg}`;
   }
 
@@ -1204,6 +919,5 @@
     setTimeout(() => URL.revokeObjectURL(url), 5000);
   }
 </script>
-
 </body>
 </html>

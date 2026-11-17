@@ -3,101 +3,69 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Darba rīku portāls</title>
+  <title>Darba rīku portāls — Material 3</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet" />
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet" />
+  <link rel="stylesheet" href="m3-theme.css" />
+  <script>
+  (function initTheme() {
+    const saved = localStorage.getItem('m3-theme');
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    const theme = saved || (prefersDark ? 'dark' : 'light');
+    document.documentElement.setAttribute('data-theme', theme);
+  })();
 
+  function toggleM3Theme() {
+    const current = document.documentElement.getAttribute('data-theme') || 'light';
+    const next = current === 'light' ? 'dark' : 'light';
+    document.documentElement.setAttribute('data-theme', next);
+    localStorage.setItem('m3-theme', next);
+    const icon = document.getElementById('themeIcon');
+    if (icon) icon.textContent = next === 'dark' ? 'light_mode' : 'dark_mode';
+  }
+
+  window.addEventListener('DOMContentLoaded', () => {
+    const current = document.documentElement.getAttribute('data-theme') || 'light';
+    const icon = document.getElementById('themeIcon');
+    if (icon) icon.textContent = current === 'dark' ? 'light_mode' : 'dark_mode';
+  });
+</script>
   <style>
-    :root {
-      --md-sys-color-background: #FDF8FD;
-      --md-sys-color-surface: #FDF8FD;
-      --md-sys-color-surface-container: #F3EDF7;
-      --md-sys-color-primary: #6750A4;
-      --md-sys-color-primary-container: #EADDFF;
-      --md-sys-color-on-primary-container: #21005D;
-      --md-sys-color-on-surface: #1C1B1F;
-      --md-sys-color-on-surface-variant: #49454F;
-      --md-sys-color-outline-variant: #CAC4D0;
-    }
-
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-
-    body {
-      font-family: 'Roboto', sans-serif;
-      background-color: var(--md-sys-color-background);
-      color: var(--md-sys-color-on-surface);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
-      padding: 24px;
-    }
-
-    .portal-container {
-      width: 100%;
-      max-width: 780px;
-      background-color: var(--md-sys-color-surface);
-      border-radius: 28px;
-      padding: 36px;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
-      border: 1px solid var(--md-sys-color-outline-variant);
-    }
-
-    .header {
-      margin-bottom: 28px;
-    }
-
-    .header h1 {
-      font-size: 28px;
-      font-weight: 700;
-      color: var(--md-sys-color-on-surface);
-      margin-bottom: 6px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .header p {
-      font-size: 15px;
-      color: var(--md-sys-color-on-surface-variant);
-    }
-
-    .tools-grid {
+    .m3-portal-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
-      gap: 18px;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 16px;
     }
 
-    .tool-card {
+    .m3-tool-card {
       display: flex;
       flex-direction: column;
       justify-content: space-between;
       background-color: var(--md-sys-color-surface-container);
-      border: 1px solid #E7E0EC;
-      border-radius: 20px;
+      border: 1px solid var(--md-sys-color-outline-variant);
+      border-radius: var(--md-sys-shape-corner-large);
       padding: 24px;
       text-decoration: none;
       color: inherit;
-      transition: transform 0.15s ease, box-shadow 0.2s ease, border-color 0.2s ease, background-color 0.2s ease;
+      transition: transform var(--md-sys-motion-duration-short) var(--md-sys-motion-easing-standard),
+                  background-color var(--md-sys-motion-duration-short) var(--md-sys-motion-easing-standard),
+                  border-color var(--md-sys-motion-duration-short) var(--md-sys-motion-easing-standard),
+                  box-shadow var(--md-sys-motion-duration-short) var(--md-sys-motion-easing-standard);
     }
 
-    .tool-card:hover {
-      transform: translateY(-3px);
-      background-color: #ECE6F0;
+    .m3-tool-card:hover {
+      transform: translateY(-2px);
+      background-color: var(--md-sys-color-surface-container-high);
       border-color: var(--md-sys-color-primary);
-      box-shadow: 0 6px 16px rgba(103, 80, 164, 0.14);
+      box-shadow: var(--md-sys-elevation-2);
     }
 
-    .tool-icon {
+    .m3-tool-badge {
       width: 48px;
       height: 48px;
-      border-radius: 14px;
+      border-radius: var(--md-sys-shape-corner-medium);
       background-color: var(--md-sys-color-primary-container);
       color: var(--md-sys-color-on-primary-container);
       display: flex;
@@ -106,99 +74,98 @@
       margin-bottom: 16px;
     }
 
-    .tool-icon .material-symbols-rounded {
+    .m3-tool-badge .material-symbols-rounded {
       font-size: 26px;
     }
 
-    .tool-title {
+    .m3-tool-title {
       font-size: 18px;
-      font-weight: 700;
-      margin-bottom: 6px;
+      font-weight: 500;
       color: var(--md-sys-color-on-surface);
+      margin-bottom: 6px;
     }
 
-    .tool-desc {
-      font-size: 13.5px;
+    .m3-tool-desc {
+      font-size: 14px;
+      line-height: 20px;
       color: var(--md-sys-color-on-surface-variant);
-      line-height: 1.45;
-      margin-bottom: 18px;
+      margin-bottom: 20px;
     }
 
-    .tool-action {
-      display: inline-flex;
+    .m3-tool-footer {
+      display: flex;
       align-items: center;
-      gap: 6px;
+      justify-content: space-between;
+      color: var(--md-sys-color-primary);
       font-size: 14px;
       font-weight: 500;
-      color: var(--md-sys-color-primary);
-    }
-
-    .footer {
-      margin-top: 28px;
-      padding-top: 16px;
-      border-top: 1px solid var(--md-sys-color-outline-variant);
-      font-size: 12.5px;
-      color: var(--md-sys-color-on-surface-variant);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
     }
   </style>
 </head>
 <body>
 
-<div class="portal-container">
-  <div class="header">
-    <h1>
-      <span class="material-symbols-rounded" style="font-size: 32px; color: var(--md-sys-color-primary);">apps</span>
-      Darba rīku portāls
-    </h1>
-    <p>Izvēlieties nepieciešamo rīku darbam ar datiem un dokumentiem.</p>
-  </div>
-
-  <div class="tools-grid">
-    <!-- 1. POGA: Pārdošanas atskaišu veidotājs -->
-    <a href="atskaites.html" class="tool-card">
-      <div>
-        <div class="tool-icon">
-          <span class="material-symbols-rounded">analytics</span>
-        </div>
-        <div class="tool-title">Pārdošanas atskaites</div>
-        <div class="tool-desc">
-          Atskaišu ģenerēšana no KODI un REALIZ failiem pa darba lapām, kā arī masveida izdruka uz A4 lapām.
-        </div>
+  <header class="m3-top-app-bar">
+    <div class="m3-top-bar-left">
+      <div class="m3-top-bar-title">
+        <span class="material-symbols-rounded" style="color: var(--md-sys-color-primary); font-size: 26px;">apps</span>
+        <span>Darba rīku portāls</span>
       </div>
-      <div class="tool-action">
-        <span>Atvērt rīku</span>
-        <span class="material-symbols-rounded" style="font-size: 18px;">arrow_forward</span>
-      </div>
-    </a>
+    </div>
+    <button type="button" class="m3-icon-btn" onclick="toggleM3Theme()" title="Pārslēgt gaišo / tumšo režīmu" aria-label="Pārslēgt motīvu">
+      <span class="material-symbols-rounded" id="themeIcon">dark_mode</span>
+    </button>
+  </header>
 
-    <!-- 2. POGA: Rēķinu formas labotājs -->
-    <a href="rekini.html" class="tool-card">
-      <div>
-        <div class="tool-icon">
-          <span class="material-symbols-rounded">receipt_long</span>
+  <main class="m3-main-wrapper">
+    <div class="m3-surface-sheet">
+      <div class="m3-headline-group">
+        <h1 class="m3-headline-medium">Dokumentu un datu apstrāde</h1>
+        <p class="m3-body-medium">Izvēlieties nepieciešamo darba moduli. Visi aprēķini tiek veikti droši un lokāli jūsu pārlūkprogrammā.</p>
+      </div>
+
+      <div class="m3-portal-grid">
+        <a href="atskaites.html" class="m3-tool-card">
+          <div>
+            <div class="m3-tool-badge">
+              <span class="material-symbols-rounded">analytics</span>
+            </div>
+            <h2 class="m3-tool-title">Pārdošanas atskaites</h2>
+            <p class="m3-tool-desc">
+              Atskaišu ģenerēšana no KODI un REALIZ failiem pa darba lapām (sheet), kā arī masveida izdruka uz A4 lapām.
+            </p>
+          </div>
+          <div class="m3-tool-footer">
+            <span>Atvērt moduli</span>
+            <span class="material-symbols-rounded" style="font-size: 20px;">arrow_forward</span>
+          </div>
+        </a>
+
+        <a href="rekini.html" class="m3-tool-card">
+          <div>
+            <div class="m3-tool-badge" style="background-color: var(--md-sys-color-tertiary-container); color: var(--md-sys-color-on-tertiary-container);">
+              <span class="material-symbols-rounded">receipt_long</span>
+            </div>
+            <h2 class="m3-tool-title">Rēķinu formas labošana</h2>
+            <p class="m3-tool-desc">
+              Rēķinu failu struktūras pielāgošana, lauku labošana un sagatavošana atbilstoši nepieciešamajai formai.
+            </p>
+          </div>
+          <div class="m3-tool-footer">
+            <span>Atvērt moduli</span>
+            <span class="material-symbols-rounded" style="font-size: 20px;">arrow_forward</span>
+          </div>
+        </a>
+      </div>
+
+      <div class="m3-footer">
+        <div class="m3-chip">
+          <span class="material-symbols-rounded">verified_user</span>
+          <span>100% lokāla apstrāde pārlūkā</span>
         </div>
-        <div class="tool-title">Rēķinu formas labošana</div>
-        <div class="tool-desc">
-          Rēķinu failu apstrāde, lauku labošana un sagatavošana atbilstoši nepieciešamajai formai.
-        </div>
+        <span>Material Design 3 • v2.0</span>
       </div>
-      <div class="tool-action">
-        <span>Atvērt rīku</span>
-        <span class="material-symbols-rounded" style="font-size: 18px;">arrow_forward</span>
-      </div>
-    </a>
-
-    <!-- NĀKAMAJAI POGAI (3., 4. utt.) NOKOPĒJIET VIENU <a href="...">...</a> BLOKU ŠEIT -->
-  </div>
-
-  <div class="footer">
-    <span>Visi rīki darbojas 100% lokāli pārlūkprogrammā</span>
-    <span>v1.0</span>
-  </div>
-</div>
+    </div>
+  </main>
 
 </body>
 </html>
